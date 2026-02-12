@@ -1,0 +1,383 @@
+import React, { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, Clock, Video, FileText, ExternalLink, Mic, HelpCircle, Star, CheckSquare, Send, CheckCircle, MessageCircle } from 'lucide-react';
+import { getEvent, getSession, getSpeaker } from '../data/eventData';
+import Header from '../components/Header';
+
+// Default quiz for any session (can be overridden per-session in data later)
+const DEFAULT_QUIZ = [
+  { id: 1, question: 'What is a key focus of frontier AI research?', options: ['Only narrow tasks', 'Scalability and general capabilities', 'Hardware only'], correct: 1 },
+  { id: 2, question: 'When building an AI agent, what is important first?', options: ['Choosing a cloud provider', 'Defining the agent’s goal and tools', 'Picking a programming language'], correct: 1 },
+  { id: 3, question: 'How do superintelligence-oriented labs typically approach safety?', options: ['Ignore it until later', 'Bake it in from the start', 'Only external audits'], correct: 1 },
+];
+
+// Default implementation task steps (generic for AI/agents)
+const DEFAULT_TASK_STEPS = [
+  'Define a clear goal or task for your agent',
+  'List the tools or APIs the agent can use',
+  'Sketch or write the decision flow (when to use which tool)',
+  'Test with one example input and refine',
+];
+
+export default function SessionDetailPage() {
+  const { eventId, sessionSlug } = useParams();
+  const event = getEvent(eventId);
+  const session = getSession(eventId, sessionSlug);
+  const speaker = session ? getSpeaker(eventId, session.speakerId) : null;
+
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [taskChecks, setTaskChecks] = useState({});
+  const [taskNotes, setTaskNotes] = useState('');
+  const [taskSubmitted, setTaskSubmitted] = useState(false);
+
+  if (!event || !session) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Session not found</h1>
+          <Link to={`/events/${eventId}`} className="text-blue-600 font-medium hover:underline">
+            Back to event
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <Header />
+
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Main content */}
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        {/* Breadcrumb */}
+        <nav className="text-xs sm:text-sm text-gray-600 mb-2">
+          <Link to="/" className="hover:text-gray-900">digo</Link>
+          <span className="mx-2">/</span>
+          <Link to={`/events/${eventId}`} className="hover:text-gray-900">{event.name}</Link>
+          <span className="mx-2">/</span>
+          <span className="text-gray-900 font-medium">{session.title}</span>
+        </nav>
+
+        {/* Session title & meta */}
+        <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+          <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-900 mb-2 sm:mb-3">
+            {session.type}
+          </span>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">{session.title}</h1>
+          <div className="flex flex-wrap gap-2 sm:gap-3 text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">
+            <span className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-600" />
+              {session.time} · {session.duration}
+            </span>
+          </div>
+          {session.description && (
+            <p className="text-sm text-gray-600 leading-relaxed">{session.description}</p>
+          )}
+        </section>
+
+        {/* Video */}
+        {session.videoUrl && (
+          <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
+              <Video className="w-4 sm:w-5 h-4 sm:h-5" />
+              Recording
+            </h2>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="aspect-video bg-soil/10">
+                <iframe
+                  title={session.title}
+                  src={session.videoUrl}
+                  className="w-full h-full"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Presentation / slides */}
+        {(session.presentationUrl || session.presentationTitle) && (
+          <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
+              <FileText className="w-4 sm:w-5 h-4 sm:h-5" />
+              Presentation
+            </h2>
+            <a
+              href={session.presentationUrl || '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-4 border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all group"
+            >
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 text-gray-900" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600">
+                  {session.presentationTitle || 'View slides'}
+                </h3>
+                <p className="text-sm text-gray-600 mt-0.5">Open or download the presentation</p>
+              </div>
+              <ExternalLink className="w-5 h-5 text-gray-600 group-hover:text-blue-600 flex-shrink-0" />
+            </a>
+          </section>
+        )}
+
+        {/* Quiz */}
+        <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <HelpCircle className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
+            Quick quiz
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Check your understanding of the session. Select an answer for each question, then submit.</p>
+          {!quizSubmitted ? (
+            <>
+              <div className="space-y-5 mb-5">
+                {DEFAULT_QUIZ.map((q) => (
+                  <div key={q.id} className="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                    <p className="text-sm font-medium text-gray-900 mb-3">{q.id}. {q.question}</p>
+                    <div className="space-y-2">
+                      {q.options.map((opt, idx) => (
+                        <label key={idx} className="flex items-center gap-3 cursor-pointer group">
+                          <input
+                            type="radio"
+                            name={`quiz-${q.id}`}
+                            checked={quizAnswers[q.id] === idx}
+                            onChange={() => setQuizAnswers((prev) => ({ ...prev, [q.id]: idx }))}
+                            className="w-4 h-4 accent-growth"
+                          />
+                          <span className={`text-sm text-gray-600 group-hover:text-gray-900 ${quizAnswers[q.id] === idx ? 'text-gray-900 font-medium' : ''}`}>{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setQuizSubmitted(true)}
+                className="px-5 py-3 bg-gray-900 text-white rounded-lg  transition-colors text-sm font-medium flex items-center gap-2 active:scale-95"
+              >
+                <Send className="w-4 h-4" />
+                Submit answers
+              </button>
+            </>
+          ) : (
+            <div className="space-y-4">
+              {DEFAULT_QUIZ.map((q) => {
+                const correct = quizAnswers[q.id] === q.correct;
+                return (
+                  <div key={q.id} className="flex items-start gap-4 p-4 rounded-xl bg-mist/50">
+                    {correct ? (
+                      <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <span className="w-5 h-5 rounded-full border-2 border-autumn flex-shrink-0 mt-0.5" />
+                    )}
+                    <div>
+                      <p className="font-medium text-gray-900">{q.question}</p>
+                      <p className={`text-sm ${correct ? 'text-blue-600' : 'text-gray-600'}`}>
+                        Your answer: {q.options[quizAnswers[q.id] ?? 0]} {!correct && `· Correct: ${q.options[q.correct]}`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+              <p className="text-gray-600 text-sm pt-4">
+                Score: {DEFAULT_QUIZ.filter((q) => quizAnswers[q.id] === q.correct).length} / {DEFAULT_QUIZ.length}
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* Review */}
+        <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <Star className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
+            Rate this session
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Your feedback helps us and the speaker improve.</p>
+          {!reviewSubmitted ? (
+            <>
+              <div className="flex items-center gap-1 mb-6">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onMouseEnter={() => setReviewHover(star)}
+                    onMouseLeave={() => setReviewHover(0)}
+                    onClick={() => setReviewRating(star)}
+                    className="p-1 rounded focus:outline-none focus:ring-2 focus:ring-growth"
+                    aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                  >
+                    <Star
+                      className={`w-8 h-8 transition-colors ${
+                        star <= (reviewHover || reviewRating) ? 'text-bloom fill-bloom' : 'text-mist'
+                      }`}
+                    />
+                  </button>
+                ))}
+                <span className="ml-2 text-sm text-gray-600">{reviewHover || reviewRating || 0}/5</span>
+              </div>
+              <textarea
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                placeholder="Optional: What did you find most useful? Any suggestions?"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-600 placeholder-stem/60 resize-none mt-2"
+                rows={3}
+              />
+              <button
+                type="button"
+                onClick={() => setReviewSubmitted(true)}
+                className="mt-4 sm:mt-5 px-5 py-3 bg-gray-900 text-white rounded-lg  transition-colors text-sm font-medium flex items-center gap-2 active:scale-95"
+              >
+                <Send className="w-4 h-4" />
+                Submit review
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center gap-4 p-5 bg-gray-100/30 rounded-xl text-gray-900">
+              <CheckCircle className="w-8 h-8 text-blue-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Thanks for your feedback!</p>
+                <p className="text-sm text-gray-600 mt-1">Your review has been submitted.</p>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Implementation task */}
+        <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <CheckSquare className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
+            Try it yourself
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Use this checklist to apply what you learned. Tick off each step as you go.</p>
+          {!taskSubmitted ? (
+            <>
+              <ul className="space-y-4 mb-6">
+                {DEFAULT_TASK_STEPS.map((step, idx) => (
+                  <li key={idx}>
+                    <label className="flex items-start gap-4 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={!!taskChecks[idx]}
+                        onChange={() => setTaskChecks((prev) => ({ ...prev, [idx]: !prev[idx] }))}
+                        className="w-5 h-5 mt-0.5 rounded accent-growth flex-shrink-0"
+                      />
+                      <span className={`text-gray-600 group-hover:text-gray-900 ${taskChecks[idx] ? 'line-through text-gray-600/70' : ''}`}>
+                        {step}
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              <textarea
+                value={taskNotes}
+                onChange={(e) => setTaskNotes(e.target.value)}
+                placeholder="Optional: Describe what you built or tried (e.g. agent goal, tools used, result)."
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-600 placeholder-stem/60 resize-none mb-5"
+                rows={3}
+              />
+              <button
+                type="button"
+                onClick={() => setTaskSubmitted(true)}
+                className="px-5 py-3 bg-gray-900 text-white rounded-lg  transition-colors text-sm font-medium flex items-center gap-2 active:scale-95"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Mark complete
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center gap-4 p-5 bg-gray-100/30 rounded-xl text-gray-900">
+              <CheckCircle className="w-8 h-8 text-blue-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Task completed</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {Object.keys(taskChecks).filter((k) => taskChecks[k]).length} / {DEFAULT_TASK_STEPS.length} steps checked.
+                  {taskNotes && ' Your notes were saved.'}
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Back to event & schedule */}
+        <section className="pt-8 border-t border-gray-200">
+          <Link
+            to={`/events/${eventId}#schedule`}
+            className="inline-flex items-center gap-2 text-blue-600 font-medium hover:underline"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            View all sessions
+          </Link>
+        </section>
+          </div>
+
+          {/* Speaker info – right sidebar */}
+          {speaker && (
+            <aside className="space-y-4 sm:space-y-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
+                  <Mic className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
+                  Speaker
+                </h2>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 bg-gray-900 rounded-lg flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+                      {speaker.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-gray-900">{speaker.name}</h3>
+                      <p className="text-sm text-gray-600">{speaker.company}</p>
+                      <p className="text-sm text-blue-600 font-medium mt-1">{speaker.topic}</p>
+                    </div>
+                  </div>
+
+                  {/* Social links */}
+                  {(speaker.twitter || speaker.linkedin) && (
+                    <div className="flex items-center gap-3">
+                      {speaker.twitter && (
+                        <a
+                          href={`https://twitter.com/${speaker.twitter}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-gray-600 hover:text-blue-600"
+                        >
+                          @{speaker.twitter}
+                        </a>
+                      )}
+                      {speaker.linkedin && (
+                        <a
+                          href={speaker.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-gray-600 hover:text-blue-600"
+                        >
+                          LinkedIn
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Message speaker button */}
+                  <button className="w-full bg-gray-100 text-gray-900 py-3 px-3 rounded-lg text-sm font-medium  hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95">
+                    <MessageCircle className="w-4 h-4" />
+                    Message Speaker
+                  </button>
+                </div>
+              </div>
+            </aside>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
