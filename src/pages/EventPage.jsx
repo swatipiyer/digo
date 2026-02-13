@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   Mic,
   Briefcase,
@@ -20,13 +20,22 @@ import {
   Mail,
   Info,
   CheckCircle,
+  Copy,
+  Linkedin,
+  Twitter,
+  Instagram,
+  Tag,
+  X as XIcon,
 } from 'lucide-react';
 import { getEvent } from '../data/eventData';
 import Header from '../components/Header';
 import MessagingModal from '../components/MessagingModal';
+import { generateShareTemplates, getPlatformTemplateCount } from '../utils/shareTemplates';
+import { createTrackableShortUrl } from '../utils/urlShortener';
 
 export default function EventPage() {
   const { eventId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const event = getEvent(eventId);
   const [activeSection, setActiveSection] = useState('about');
   const [selectedSpeaker, setSelectedSpeaker] = useState(null);
@@ -34,6 +43,59 @@ export default function EventPage() {
   const [messagingRecipient, setMessagingRecipient] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareRole, setShareRole] = useState('attendee'); // 'attendee', 'speaker', 'organizer'
+  const [sharePlatform, setSharePlatform] = useState('linkedin'); // 'email', 'linkedin', 'twitter', 'instagram'
+  const [templateIndex, setTemplateIndex] = useState(0);
+  const [shortUrl, setShortUrl] = useState(null);
+  const [isGeneratingUrl, setIsGeneratingUrl] = useState(false);
+  const [selectedTag, setSelectedTag] = useState(null);
+
+  // Handle tag from URL params
+  useEffect(() => {
+    const tagParam = searchParams.get('tag');
+    if (tagParam) {
+      setSelectedTag(tagParam);
+      // Scroll to sessions section
+      setTimeout(() => {
+        document.getElementById('sessions')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [searchParams]);
+
+  // Get all unique tags from sessions
+  const getAllTags = () => {
+    if (!event?.sessions) return [];
+    const tags = new Set();
+    event.sessions.forEach(session => {
+      if (session.tags) {
+        session.tags.forEach(tag => tags.add(tag));
+      }
+    });
+    return Array.from(tags).sort();
+  };
+
+  // Filter sessions by selected tag
+  const getFilteredSessions = () => {
+    if (!event?.sessions) return [];
+    if (!selectedTag) return event.sessions;
+    return event.sessions.filter(session =>
+      session.tags && session.tags.includes(selectedTag)
+    );
+  };
+
+  const allTags = getAllTags();
+  const filteredSessions = getFilteredSessions();
+
+  const handleTagClick = (tag) => {
+    if (selectedTag === tag) {
+      setSelectedTag(null);
+      setSearchParams({});
+    } else {
+      setSelectedTag(tag);
+      setSearchParams({ tag });
+    }
+  };
 
   if (!event) {
     return (
@@ -59,22 +121,79 @@ export default function EventPage() {
 
   const getSpeaker = (speakerId) => event.speakers?.find((s) => s.id === speakerId);
 
+  const getCurrentTemplate = () => {
+    // Use shortened URL if available, otherwise use full URL
+    const urlToUse = shortUrl || window.location.href;
+    return generateShareTemplates(event, shareRole, sharePlatform, templateIndex, urlToUse);
+  };
+
+  const getTemplateText = () => {
+    const template = getCurrentTemplate();
+    if (sharePlatform === 'email' && template.body) {
+      return `Subject: ${template.subject}\n\n${template.body}`;
+    }
+    return template;
+  };
+
   const handleShare = async () => {
+    setShowShareModal(true);
+
+    // Generate shortened URL with UTM tracking if not already generated
+    if (!shortUrl) {
+      setIsGeneratingUrl(true);
+      try {
+        const url = window.location.href;
+        const shortened = await createTrackableShortUrl(url, {
+          source: shareRole,
+          medium: sharePlatform,
+          campaign: 'event_share'
+        });
+        setShortUrl(shortened);
+      } catch (error) {
+        console.error('Error generating short URL:', error);
+        setShortUrl(window.location.href);
+      } finally {
+        setIsGeneratingUrl(false);
+      }
+    }
+  };
+
+  const handleCopyMessage = async () => {
+    const message = getTemplateText();
+    try {
+      await navigator.clipboard.writeText(message);
+      setToastMessage('Message copied to clipboard!');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (err) {
+      console.error('Error copying:', err);
+    }
+  };
+
+  const handleSharePlatform = (platform) => {
+    const url = window.location.href;
+    const urls = {
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(getTemplateText())}`,
+      instagram: url // Instagram doesn't support web sharing, just copy
+    };
+
+    if (platform === 'instagram' || platform === 'email') {
+      handleCopyMessage();
+    } else if (urls[platform]) {
+      window.open(urls[platform], '_blank', 'width=600,height=600');
+    }
+  };
+
+  const handleCopyLink = async () => {
     const url = window.location.href;
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: event.name,
-          text: event.description,
-          url: url,
-        });
-      } else {
-        await navigator.clipboard.writeText(url);
-        setShowShareToast(true);
-        setTimeout(() => setShowShareToast(false), 3000);
-      }
+      await navigator.clipboard.writeText(url);
+      setToastMessage('Link copied to clipboard!');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } catch (err) {
-      console.error('Error sharing:', err);
+      console.error('Error copying:', err);
     }
   };
 
@@ -187,8 +306,16 @@ END:VCALENDAR`;
                         className="border border-gray-200 rounded-lg p-2 hover:border-gray-300 hover:shadow-sm transition-all text-left cursor-pointer group"
                       >
                         <div className="flex flex-col items-center text-center gap-2">
-                          <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center text-white font-bold text-base flex-shrink-0 relative">
-                            {speaker.name.charAt(0)}
+                          <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center text-white font-bold text-base flex-shrink-0 relative overflow-hidden">
+                            {speaker.photoUrl || speaker.avatar ? (
+                              <img
+                                src={speaker.photoUrl || speaker.avatar}
+                                alt={speaker.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              speaker.name.charAt(0)
+                            )}
                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-growth rounded-full flex items-center justify-center">
                               <Info className="w-2.5 h-2.5 text-white" />
                             </div>
@@ -238,9 +365,49 @@ END:VCALENDAR`;
               <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Sessions</h2>
                 <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Click a session to view details</p>
-                {event.sessions && event.sessions.length > 0 ? (
+
+                {/* Tag Filter */}
+                {allTags.length > 0 && (
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Tag className="w-4 h-4 text-gray-600" />
+                      <span className="text-sm font-semibold text-gray-900">Filter by topic:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {allTags.map((tag) => (
+                        <button
+                          key={tag}
+                          onClick={() => handleTagClick(tag)}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                            selectedTag === tag
+                              ? 'bg-teal-600 text-white border-2 border-teal-600'
+                              : 'bg-teal-50 text-teal-700 border-2 border-teal-200 hover:bg-teal-100'
+                          }`}
+                        >
+                          {tag}
+                          {selectedTag === tag && <XIcon className="w-3 h-3" />}
+                        </button>
+                      ))}
+                      {selectedTag && (
+                        <button
+                          onClick={() => handleTagClick(selectedTag)}
+                          className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900"
+                        >
+                          Clear filter
+                        </button>
+                      )}
+                    </div>
+                    {selectedTag && (
+                      <p className="text-xs text-gray-600 mt-2">
+                        Showing {filteredSessions.length} {filteredSessions.length === 1 ? 'session' : 'sessions'} with "{selectedTag}"
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {filteredSessions && filteredSessions.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {event.sessions.map((session) => {
+                  {filteredSessions.map((session) => {
                     const speaker = getSpeaker(session.speakerId);
                     return (
                       <Link
@@ -264,6 +431,23 @@ END:VCALENDAR`;
                             <p className="text-xs text-gray-600 mb-2">
                               {speaker.name}
                             </p>
+                          )}
+
+                          {/* Tags */}
+                          {session.tags && session.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {session.tags.slice(0, 3).map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-teal-50 text-teal-700 border border-teal-200"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                              {session.tags.length > 3 && (
+                                <span className="text-[10px] text-gray-500">+{session.tags.length - 3}</span>
+                              )}
+                            </div>
                           )}
 
                           {/* Available content icons */}
@@ -498,6 +682,13 @@ END:VCALENDAR`;
                   <MapPin className="w-4 h-4" />
                   Directions
                 </button>
+                <Link
+                  to={`/events/${eventId}/media-kit`}
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-100 text-gray-900 rounded-lg text-xs font-medium  hover:text-white transition-all active:scale-95"
+                >
+                  <FileText className="w-4 h-4" />
+                  Media Kit
+                </Link>
               </div>
 
               {/* Share confirmation toast */}
@@ -617,9 +808,16 @@ END:VCALENDAR`;
 
             {/* Speaker info */}
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-16 h-16 bg-gray-900 rounded-xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">
-                {selectedSpeaker.name.charAt(0)}
-              </div>
+              <div className="w-16 h-16 bg-gray-900 rounded-xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 overflow-hidden">
+                {selectedSpeaker.photoUrl || selectedSpeaker.avatar ? (
+                  <img
+                    src={selectedSpeaker.photoUrl || selectedSpeaker.avatar}
+                    alt={selectedSpeaker.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  selectedSpeaker.name.charAt(0)
+                )}
               <div className="flex-1 min-w-0">
                 <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedSpeaker.name}</h3>
                 <p className="text-sm text-gray-600">{selectedSpeaker.company}</p>
@@ -686,6 +884,140 @@ END:VCALENDAR`;
           recipient={messagingRecipient}
           onClose={() => setMessagingRecipient(null)}
         />
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="border-b border-gray-200 p-6 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900">Share Event</h2>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Role Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Share as:</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { role: 'attendee', label: 'Attendee', icon: Users },
+                    { role: 'speaker', label: 'Speaker', icon: Mic },
+                    { role: 'organizer', label: 'Organizer', icon: Briefcase }
+                  ].map(({ role, label, icon: Icon }) => (
+                    <button
+                      key={role}
+                      onClick={() => { setShareRole(role); setTemplateIndex(0); }}
+                      className={`p-4 rounded-lg border-2 transition-all text-center ${
+                        shareRole === role
+                          ? 'border-blue-600 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <Icon className={`w-6 h-6 mx-auto mb-2 ${shareRole === role ? 'text-blue-600' : 'text-gray-600'}`} />
+                      <span className={`text-sm font-medium ${shareRole === role ? 'text-blue-600' : 'text-gray-900'}`}>
+                        {label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Platform Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Platform:</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { platform: 'email', label: 'Email', icon: Mail, color: 'bg-gray-600' },
+                    { platform: 'linkedin', label: 'LinkedIn', icon: Linkedin, color: 'bg-[#0077B5]' },
+                    { platform: 'twitter', label: 'Twitter', icon: Twitter, color: 'bg-[#1DA1F2]' },
+                    { platform: 'instagram', label: 'Instagram', icon: Instagram, color: 'bg-gradient-to-tr from-[#FCAF45] via-[#E1306C] to-[#C13584]' }
+                  ].map(({ platform, label, icon: Icon, color }) => (
+                    <button
+                      key={platform}
+                      onClick={() => { setSharePlatform(platform); setTemplateIndex(0); }}
+                      className={`p-3 rounded-lg transition-all text-center ${
+                        sharePlatform === platform
+                          ? `${color} text-white`
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5 mx-auto mb-1" />
+                      <span className="text-xs font-medium">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Template Navigation */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Template {templateIndex + 1} of {getPlatformTemplateCount(shareRole, sharePlatform)}
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setTemplateIndex(Math.max(0, templateIndex - 1))}
+                      disabled={templateIndex === 0}
+                      className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      ← Prev
+                    </button>
+                    <button
+                      onClick={() => setTemplateIndex(Math.min(getPlatformTemplateCount(shareRole, sharePlatform) - 1, templateIndex + 1))}
+                      disabled={templateIndex >= getPlatformTemplateCount(shareRole, sharePlatform) - 1}
+                      className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{getTemplateText()}</p>
+                </div>
+              </div>
+
+              {/* Share Actions */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    handleSharePlatform(sharePlatform);
+                    setShowShareModal(false);
+                  }}
+                  className={`flex items-center justify-center gap-2 p-4 text-white rounded-lg hover:opacity-90 transition-all ${
+                    sharePlatform === 'email' ? 'bg-gray-600' :
+                    sharePlatform === 'linkedin' ? 'bg-[#0077B5]' :
+                    sharePlatform === 'twitter' ? 'bg-[#1DA1F2]' :
+                    'bg-gradient-to-r from-[#FCAF45] via-[#E1306C] to-[#C13584]'
+                  }`}
+                >
+                  {sharePlatform === 'email' && <Mail className="w-5 h-5" />}
+                  {sharePlatform === 'linkedin' && <Linkedin className="w-5 h-5" />}
+                  {sharePlatform === 'twitter' && <Twitter className="w-5 h-5" />}
+                  {sharePlatform === 'instagram' && <Instagram className="w-5 h-5" />}
+                  <span className="font-medium">
+                    {sharePlatform === 'email' || sharePlatform === 'instagram' ? 'Copy' : 'Share'}
+                  </span>
+                </button>
+                <button
+                  onClick={() => {
+                    handleCopyMessage();
+                    setShowShareModal(false);
+                  }}
+                  className="flex items-center justify-center gap-2 p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all"
+                >
+                  <Copy className="w-5 h-5 text-gray-700" />
+                  <span className="font-medium text-gray-900">Copy Text</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Global Success Toast */}
