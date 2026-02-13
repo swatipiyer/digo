@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Grid, List, ChevronDown, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, TrendingUp, Star, Building2, Search } from 'lucide-react';
+import { Grid, List, ChevronDown, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, TrendingUp, Star, Building2, Search, Users } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 
@@ -44,6 +44,7 @@ export default function DiscoverPage() {
       distance: '0.5 miles',
       externalUrl: 'https://lu.ma/example-event-1',
       image: null,
+      registered: 245,
     },
     {
       id: 2,
@@ -59,6 +60,7 @@ export default function DiscoverPage() {
       distance: '0.5 miles',
       externalUrl: 'https://eventbrite.com/example-event-2',
       image: null,
+      registered: 487,
     },
     {
       id: 3,
@@ -74,6 +76,7 @@ export default function DiscoverPage() {
       distance: '0.5 miles',
       externalUrl: 'https://lu.ma/example-event-3',
       image: null,
+      registered: 156,
     },
     {
       id: 4,
@@ -89,6 +92,7 @@ export default function DiscoverPage() {
       distance: '0.5 miles',
       externalUrl: 'https://lu.ma/example-event-4',
       image: null,
+      registered: 198,
     },
     {
       id: 5,
@@ -104,6 +108,7 @@ export default function DiscoverPage() {
       distance: '0.5 miles',
       externalUrl: 'https://lu.ma/example-event-5',
       image: null,
+      registered: 312,
     },
     {
       id: 6,
@@ -119,6 +124,7 @@ export default function DiscoverPage() {
       distance: '0.5 miles',
       externalUrl: 'https://lu.ma/example-event-6',
       image: null,
+      registered: 224,
     },
   ];
 
@@ -435,6 +441,10 @@ export default function DiscoverPage() {
                         <MapPin className="w-3 h-3" />
                         <span className="truncate">{getShortLocation(event.location)}</span>
                       </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        <span>{event.registered || 0} registered</span>
+                      </div>
                     </div>
 
                     {/* Action Buttons */}
@@ -535,6 +545,10 @@ export default function DiscoverPage() {
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
                       <span className="truncate">{getShortLocation(event.location)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      <span>{event.registered || 0} registered</span>
                     </div>
                   </div>
 
@@ -673,7 +687,7 @@ export default function DiscoverPage() {
                   {/* Name Column */}
                   <div className="col-span-5">
                     <p className="text-sm text-gray-900 mb-2">{event.name}</p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="px-2.5 py-0.5 bg-gray-100 text-gray-900 text-xs font-medium rounded">
                         {event.type}
                       </span>
@@ -683,6 +697,10 @@ export default function DiscoverPage() {
                       >
                         {event.organizer}
                       </Link>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Users className="w-3 h-3" />
+                      <span>{event.registered || 0} registered</span>
                     </div>
                   </div>
 

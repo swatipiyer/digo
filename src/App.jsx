@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { Calendar, Users, DollarSign, FileText, Send, Plus, Download, Edit2, Trash2, Eye, Mail, Building, BarChart3, CheckCircle, Clock, MapPin, Search, Filter, UserPlus, Briefcase, Mic, ChevronDown, X, Bell, Sun, Moon, Heart, Share2, Bookmark, Globe, Tag, TrendingUp, Star, MessageCircle, Settings, Lock, Unlock } from 'lucide-react';
+import { Calendar, Users, DollarSign, FileText, Send, Plus, Download, Edit2, Trash2, Eye, Mail, Building, BarChart3, CheckCircle, Clock, MapPin, Search, Filter, UserPlus, Briefcase, Mic, ChevronDown, X, Bell, Sun, Moon, Heart, Share2, Bookmark, Globe, Tag, TrendingUp, Star, MessageCircle, Settings, Lock, Unlock, Copy, Linkedin, ArrowLeft } from 'lucide-react';
 import EventPage from './pages/EventPage';
 import SessionDetailPage from './pages/SessionDetailPage';
+import MediaKitPage from './pages/MediaKitPage';
 import DiscoverPage from './pages/DiscoverPage';
 import GroupsPage from './pages/GroupsPage';
 import CalendarPage from './pages/CalendarPage';
@@ -18,10 +19,11 @@ import SponsorSubmissionPage from './pages/SponsorSubmissionPage';
 import SpeakerSubmissionPage from './pages/SpeakerSubmissionPage';
 import CallForSpeakersPage from './pages/CallForSpeakersPage';
 import EventServicesPage from './pages/EventServicesPage';
+import ReportsPage from './pages/ReportsPage';
 import AppTour from './components/AppTour';
 import Header from './components/Header';
 
-const PlanDashboard = () => {
+const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(() => {
     const saved = localStorage.getItem('digo_current_page');
     return saved || 'organizers';
@@ -132,6 +134,8 @@ const PlanDashboard = () => {
     const [newSession, setNewSession] = useState({ title: '', date: '', time: '', duration: '', topic: '', description: '' });
     const [newSpeakerInvite, setNewSpeakerInvite] = useState({ name: '', email: '', company: '', topic: '' });
     const [newSponsorInvite, setNewSponsorInvite] = useState({ companyName: '', contactName: '', email: '', tier: 'Gold' });
+    const [shareEvent, setShareEvent] = useState(null);
+    const [shareToast, setShareToast] = useState(false);
     const [isLoadingUrl, setIsLoadingUrl] = useState(false);
     const [urlError, setUrlError] = useState('');
     const [urlSuccess, setUrlSuccess] = useState(false);
@@ -413,14 +417,23 @@ const PlanDashboard = () => {
                       <p className="text-xs text-stem">Sponsors</p>
                     </div>
                   </div>
-                  {event.slug && (
-                    <Link
-                      to={`/events/${event.slug}`}
-                      className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    {event.slug && (
+                      <Link
+                        to={`/events/${event.slug}`}
+                        className="flex items-center justify-center gap-2 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                      >
+                        View event
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => setShareEvent(event)}
+                      className="flex items-center justify-center gap-2 py-2.5 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-900"
                     >
-                      View event page
-                    </Link>
-                  )}
+                      <Share2 className="w-4 h-4" />
+                      Share
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -842,6 +855,80 @@ const PlanDashboard = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Share Modal */}
+        {shareEvent && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full">
+              <div className="border-b border-gray-200 p-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Share Event</h2>
+                <button onClick={() => setShareEvent(null)} className="p-2 hover:bg-gray-100 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <h3 className="font-bold text-gray-900 text-lg mb-2">{shareEvent.name}</h3>
+                  <p className="text-sm text-gray-600 mb-1">{shareEvent.location}</p>
+                  <p className="text-sm text-gray-600">{shareEvent.date}</p>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">
+{`Join us for ${shareEvent.name}! 🚀
+
+📅 ${shareEvent.date}
+📍 ${shareEvent.location}
+
+Register now: ${window.location.origin}/events/${shareEvent.slug || shareEvent.id}`}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/events/${shareEvent.slug || shareEvent.id}`;
+                      const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+                      window.open(linkedInUrl, '_blank', 'width=600,height=600');
+                      setShareEvent(null);
+                    }}
+                    className="flex items-center gap-3 p-4 bg-[#0077B5] text-white rounded-lg hover:bg-[#006399]"
+                  >
+                    <Linkedin className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="font-medium">Share on LinkedIn</div>
+                      <div className="text-xs opacity-90">Share with your network</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const message = `Join us for ${shareEvent.name}! 🚀\n\n📅 ${shareEvent.date}\n📍 ${shareEvent.location}\n\nRegister now: ${window.location.origin}/events/${shareEvent.slug || shareEvent.id}`;
+                      await navigator.clipboard.writeText(message);
+                      setShareToast(true);
+                      setTimeout(() => setShareToast(false), 3000);
+                      setShareEvent(null);
+                    }}
+                    className="flex items-center gap-3 p-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
+                  >
+                    <Copy className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="font-medium">Copy Message</div>
+                      <div className="text-xs opacity-90">Copy to clipboard</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Share Toast */}
+        {shareToast && (
+          <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+              <CheckCircle className="w-5 h-5" />
+              <p className="text-sm font-medium">Message copied to clipboard!</p>
             </div>
           </div>
         )}
@@ -2228,8 +2315,8 @@ Events Team
               </h2>
             </div>
             <div className="px-4 pb-4">
-              <p className="text-xs text-stem mb-2">Switch role view for context as needed</p>
-              <div className="bg-dew border border-mist p-1 rounded-xl grid grid-cols-3 gap-1">
+              <p className="text-xs text-gray-600 mb-3 font-medium">Switch role view for context as needed</p>
+              <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-2 border-teal-200 p-2 rounded-xl grid grid-cols-3 gap-2">
                 {[
                   { id: 'organizer', label: 'Organizer' },
                   { id: 'speaker', label: 'Speaker' },
@@ -2241,10 +2328,10 @@ Events Team
                       setCurrentRole(role.id);
                       setCurrentPage(role.id === 'organizer' ? 'organizers' : role.id === 'speaker' ? 'speakers' : 'sponsors');
                     }}
-                    className={`px-2 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                    className={`px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                       currentRole === role.id
-                        ? 'bg-gray-900 text-white shadow-garden-sm'
-                        : 'text-stem hover:text-forest'
+                        ? 'bg-teal-600 text-white shadow-lg scale-105'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
                     }`}
                   >
                     {role.label}
@@ -2300,9 +2387,12 @@ Events Team
                 </button>
               </nav>
             ) : (
-              <nav className="p-4 space-y-2">
-                <p className="text-xs uppercase tracking-wide text-stem font-semibold px-2">Role View</p>
-                <div className="px-2 py-3 rounded-lg bg-dew text-forest font-medium flex items-center gap-3">
+              <nav className="p-4 space-y-3">
+                <div className={`px-4 py-3 rounded-xl font-bold flex items-center gap-3 ${
+                  currentRole === 'speaker'
+                    ? 'bg-teal-50 text-teal-900 border-2 border-teal-200'
+                    : 'bg-blue-50 text-blue-900 border-2 border-blue-200'
+                }`}>
                   {currentRole === 'speaker' ? <Mic className="w-5 h-5" /> : <Briefcase className="w-5 h-5" />}
                   <span>{currentRole === 'speaker' ? 'Speaker Portal' : 'Sponsor Portal'}</span>
                 </div>
@@ -2311,8 +2401,9 @@ Events Team
                     setCurrentRole('organizer');
                     setCurrentPage('organizers');
                   }}
-                  className="w-full px-3 py-2 rounded-lg text-sm font-medium text-stem hover:bg-mist"
+                  className="w-full px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 flex items-center gap-2"
                 >
+                  <ArrowLeft className="w-4 h-4" />
                   Back to Organizer
                 </button>
               </nav>
@@ -2335,7 +2426,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<PlanDashboard />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="/discover" element={<DiscoverPage />} />
         <Route path="/discover/organizations/:organizerSlug" element={<DiscoverPage />} />
         <Route path="/groups" element={<GroupsPage />} />
@@ -2343,6 +2434,7 @@ function App() {
         <Route path="/groups/:orgId/events" element={<OrganizationEventsPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/events/:eventId" element={<EventPage />} />
+        <Route path="/events/:eventId/media-kit" element={<MediaKitPage />} />
         <Route path="/events/:eventId/sessions/:sessionSlug" element={<SessionDetailPage />} />
         <Route path="/email-builder" element={<EmailMakerPage />} />
         <Route path="/add-venue" element={<VenueSubmissionPage />} />

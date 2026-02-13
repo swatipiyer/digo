@@ -14,7 +14,7 @@ export default function GroupsPage() {
   });
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const categories = ['All', 'Technology', 'Design', 'Entrepreneurship'];
+  const categories = ['All', 'My Groups', 'Technology', 'Design', 'Entrepreneurship', 'Public', 'Private'];
 
   const showSuccessToast = (message) => {
     setToastMessage(message);
@@ -53,6 +53,8 @@ export default function GroupsPage() {
       description: 'TechEquity events in and around Silicon Valley. Monthly meet ups, workshops and our yearly Ai Summit conference.',
       category: 'Technology',
       logo: '/techequityailogo.png',
+      events: 24,
+      isPublic: true,
     },
     {
       id: 1,
@@ -60,6 +62,8 @@ export default function GroupsPage() {
       members: 1247,
       description: 'A community for AI/ML practitioners and enthusiasts to share knowledge and collaborate.',
       category: 'Technology',
+      events: 18,
+      isPublic: true,
     },
     {
       id: 2,
@@ -67,6 +71,8 @@ export default function GroupsPage() {
       members: 856,
       description: 'Connect with fellow founders, share experiences, and grow together.',
       category: 'Entrepreneurship',
+      events: 12,
+      isPublic: false,
     },
     {
       id: 3,
@@ -74,6 +80,8 @@ export default function GroupsPage() {
       members: 532,
       description: 'Share design inspiration, get feedback, and connect with designers.',
       category: 'Design',
+      events: 8,
+      isPublic: true,
     },
     {
       id: 4,
@@ -81,15 +89,26 @@ export default function GroupsPage() {
       members: 423,
       description: 'Building the decentralized future together.',
       category: 'Technology',
+      events: 15,
+      isPublic: false,
     },
   ];
 
   const filteredGroups = groups.filter(
-    (group) =>
-      (group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       group.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       group.category.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      (selectedCategory === 'All' || group.category === selectedCategory)
+    (group) => {
+      const matchesSearch =
+        group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        group.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        group.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      if (selectedCategory === 'All') return true;
+      if (selectedCategory === 'My Groups') return joinedGroups.includes(group.id);
+      if (selectedCategory === 'Public') return group.isPublic === true;
+      if (selectedCategory === 'Private') return group.isPublic === false;
+      return group.category === selectedCategory;
+    }
   );
 
   // Split into My Groups and Discover Groups
@@ -173,9 +192,15 @@ export default function GroupsPage() {
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 mb-2">{group.name}</h3>
                       <p className="text-sm text-gray-600 mb-3">{group.description}</p>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Users className="w-4 h-4" />
-                        {group.members} members
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          {group.members} members
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          {group.events || 0} events
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -227,9 +252,15 @@ export default function GroupsPage() {
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 mb-2">{group.name}</h3>
                       <p className="text-sm text-gray-600 mb-3">{group.description}</p>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Users className="w-4 h-4" />
-                        {group.members} members
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          {group.members} members
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          {group.events || 0} events
+                        </div>
                       </div>
                     </div>
                   </div>
