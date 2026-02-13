@@ -655,6 +655,7 @@ END:VCALENDAR`;
               <h3 className="text-sm font-bold text-gray-900 mb-3">Quick Actions</h3>
               <div className="grid grid-cols-2 gap-2">
                 <button
+                  type="button"
                   onClick={handleShare}
                   className="flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-100 text-gray-900 rounded-lg text-xs font-medium  hover:text-white transition-all active:scale-95"
                 >
@@ -662,6 +663,7 @@ END:VCALENDAR`;
                   Share
                 </button>
                 <button
+                  type="button"
                   onClick={handleAddToCalendar}
                   className="flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-100 text-gray-900 rounded-lg text-xs font-medium  hover:text-white transition-all active:scale-95"
                 >
@@ -669,13 +671,15 @@ END:VCALENDAR`;
                   Add to Cal
                 </button>
                 <button
+                  type="button"
                   onClick={handleDownloadResources}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-100 text-gray-900 rounded-lg text-xs font-medium  hover:text-white transition-all active:scale-95"
+                  className="flex items-center justify-center gap-2 px-3 py-2-5 bg-gray-100 text-gray-900 rounded-lg text-xs font-medium  hover:text-white transition-all active:scale-95"
                 >
                   <Download className="w-4 h-4" />
                   Resources
                 </button>
                 <button
+                  type="button"
                   onClick={handleGetDirections}
                   className="flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-100 text-gray-900 rounded-lg text-xs font-medium  hover:text-white transition-all active:scale-95"
                 >
