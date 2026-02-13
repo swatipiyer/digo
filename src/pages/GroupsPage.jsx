@@ -8,7 +8,10 @@ export default function GroupsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [joinedGroups, setJoinedGroups] = useState([]);
+  const [joinedGroups, setJoinedGroups] = useState(() => {
+    const saved = localStorage.getItem('digo_joined_groups');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = ['All', 'Technology', 'Design', 'Entrepreneurship'];
@@ -20,13 +23,16 @@ export default function GroupsPage() {
   };
 
   const handleJoinGroup = (group) => {
+    let newJoinedGroups;
     if (joinedGroups.includes(group.id)) {
-      setJoinedGroups(joinedGroups.filter(id => id !== group.id));
+      newJoinedGroups = joinedGroups.filter(id => id !== group.id);
       showSuccessToast(`Left ${group.name}`);
     } else {
-      setJoinedGroups([...joinedGroups, group.id]);
+      newJoinedGroups = [...joinedGroups, group.id];
       showSuccessToast(`Joined ${group.name}! Check your email for details.`);
     }
+    setJoinedGroups(newJoinedGroups);
+    localStorage.setItem('digo_joined_groups', JSON.stringify(newJoinedGroups));
   };
 
   const handleViewGroup = (group) => {
@@ -86,6 +92,10 @@ export default function GroupsPage() {
       (selectedCategory === 'All' || group.category === selectedCategory)
   );
 
+  // Split into My Groups and Discover Groups
+  const myGroups = filteredGroups.filter(group => joinedGroups.includes(group.id));
+  const discoverGroups = filteredGroups.filter(group => !joinedGroups.includes(group.id));
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -135,11 +145,70 @@ export default function GroupsPage() {
           )}
         </div>
 
-        {/* Groups Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredGroups.length > 0 ? (
+        {/* My Groups Section */}
+        {myGroups.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <CheckCircle className="w-5 h-5 text-blue-600" />
+              <h2 className="text-2xl font-bold text-gray-900">My Groups</h2>
+              <span className="text-sm text-gray-600">({myGroups.length})</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {myGroups.map((group) => (
+                <div
+                  key={group.id}
+                  className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all"
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    {group.logo && (
+                      <div className="w-16 h-16 bg-white border border-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <img src={group.logo} alt={group.name} className="w-full h-full object-contain p-2" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="mb-2">
+                        <span className="px-2.5 py-0.5 bg-gray-100 text-gray-900 text-xs font-medium rounded">
+                          {group.category}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">{group.name}</h3>
+                      <p className="text-sm text-gray-600 mb-3">{group.description}</p>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Users className="w-4 h-4" />
+                        {group.members} members
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleJoinGroup(group)}
+                      className="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 bg-gray-100 text-gray-900 border border-gray-300"
+                    >
+                      <Check className="w-4 h-4" />
+                      Joined
+                    </button>
+                    <button
+                      onClick={() => handleViewGroup(group)}
+                      className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 hover:border-gray-300 hover:bg-gray-50 transition-all"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Discover Groups Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            {myGroups.length > 0 ? 'Discover Groups' : 'All Groups'}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {discoverGroups.length > 0 ? (
             <>
-              {filteredGroups.map((group) => (
+              {discoverGroups.map((group) => (
                 <div
                   key={group.id}
                   className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all"
@@ -194,15 +263,25 @@ export default function GroupsPage() {
             </>
           ) : (
             <div className="col-span-full text-center py-12">
-              <p className="text-gray-600 text-lg">No groups found matching "{searchQuery}"</p>
-              <button
-                onClick={() => setSearchQuery('')}
-                className="mt-4 text-blue-600 font-medium hover:underline"
-              >
-                Clear search
-              </button>
+              <p className="text-gray-600 text-lg">
+                {searchQuery || selectedCategory !== 'All'
+                  ? `No groups found matching your filters`
+                  : 'No groups available'}
+              </p>
+              {(searchQuery || selectedCategory !== 'All') && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('All');
+                  }}
+                  className="mt-4 text-blue-600 font-medium hover:underline"
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
           )}
+          </div>
         </div>
       </main>
 

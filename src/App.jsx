@@ -11,12 +11,25 @@ import OrganizationEventsPage from './pages/OrganizationEventsPage';
 import EmailMakerPage from './pages/EmailMakerPage';
 import VenueSubmissionPage from './pages/VenueSubmissionPage';
 import VenueDiscoveryPage from './pages/VenueDiscoveryPage';
+import OrganizersListPage from './pages/OrganizersListPage';
+import EventSubmissionPage from './pages/EventSubmissionPage';
+import CertifiedOrganizerPage from './pages/CertifiedOrganizerPage';
+import SponsorSubmissionPage from './pages/SponsorSubmissionPage';
+import SpeakerSubmissionPage from './pages/SpeakerSubmissionPage';
+import CallForSpeakersPage from './pages/CallForSpeakersPage';
+import EventServicesPage from './pages/EventServicesPage';
 import AppTour from './components/AppTour';
 import Header from './components/Header';
 
 const PlanDashboard = () => {
-  const [currentPage, setCurrentPage] = useState('organizers');
-  const [currentRole, setCurrentRole] = useState('organizer');
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = localStorage.getItem('digo_current_page');
+    return saved || 'organizers';
+  });
+  const [currentRole, setCurrentRole] = useState(() => {
+    const saved = localStorage.getItem('digo_current_role');
+    return saved || 'organizer';
+  });
   const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
@@ -27,6 +40,14 @@ const PlanDashboard = () => {
       setTimeout(() => setShowTour(true), 500);
     }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('digo_current_role', currentRole);
+  }, [currentRole]);
+
+  useEffect(() => {
+    localStorage.setItem('digo_current_page', currentPage);
+  }, [currentPage]);
 
   // Discover page data
   const [discoverEvents, setDiscoverEvents] = useState([
@@ -404,6 +425,58 @@ const PlanDashboard = () => {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Join Our Community */}
+        <div>
+          <h2 className="text-2xl font-bold text-forest mb-6">Join Our Community</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link to="/become-sponsor" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-base font-bold text-forest">Become a Sponsor</h3>
+              </div>
+              <p className="text-sm text-stem leading-relaxed">Partner with events and reach our community</p>
+            </Link>
+            <Link to="/become-speaker" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Mic className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-base font-bold text-forest">Become a Speaker</h3>
+              </div>
+              <p className="text-sm text-stem leading-relaxed">Share your expertise at upcoming events</p>
+            </Link>
+            <Link to="/submit-event" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-base font-bold text-forest">Submit an Event</h3>
+              </div>
+              <p className="text-sm text-stem leading-relaxed">Share your event with the Digo community</p>
+            </Link>
+            <Link to="/become-organizer" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Star className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-base font-bold text-forest">Become an Organizer</h3>
+              </div>
+              <p className="text-sm text-stem leading-relaxed">Get certified and grow your event community</p>
+            </Link>
+            <Link to="/event-services" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Briefcase className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-base font-bold text-forest">Submit a Service</h3>
+              </div>
+              <p className="text-sm text-stem leading-relaxed">Food, swag, and other event service providers</p>
+            </Link>
+          </div>
         </div>
 
         {/* Create Event Modal */}
@@ -808,18 +881,62 @@ const PlanDashboard = () => {
           </p>
         </div>
 
+        {/* Quick Actions for Speaker Role */}
+        {currentRole === 'speaker' && (
+          <div>
+            <h2 className="text-lg font-bold text-forest mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
+                  <Eye className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-forest mb-2">View Public Profile</h3>
+                <p className="text-sm text-stem">See your speaker profile</p>
+              </button>
+              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
+                  <Edit2 className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-forest mb-2">Edit Profile</h3>
+                <p className="text-sm text-stem">Update your information</p>
+              </button>
+              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
+                  <Mic className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-forest mb-2">My Sessions</h3>
+                <p className="text-sm text-stem">View upcoming talks</p>
+              </button>
+              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
+                  <Plus className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-forest mb-2">Submit Talk</h3>
+                <p className="text-sm text-stem">Propose a new session</p>
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
-          <p className="text-stem">{speakers.length} speakers</p>
-          <button
-            onClick={() => setShowAddSpeaker(true)}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Speaker
-          </button>
+          <div>
+            <h2 className="text-lg font-bold text-forest">
+              {currentRole === 'speaker' ? 'Other Speakers' : 'All Speakers'}
+            </h2>
+            <p className="text-stem">{speakers.length} speakers</p>
+          </div>
+          {currentRole !== 'speaker' && (
+            <button
+              onClick={() => setShowAddSpeaker(true)}
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Speaker
+            </button>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {speakers.map(speaker => (
             <div key={speaker.id} className="card-brand rounded-2xl p-6 hover:border-spring hover:shadow-sm transition-all">
               <div className="flex items-start justify-between mb-4">
@@ -987,27 +1104,75 @@ Generated on: ${new Date().toLocaleDateString()}
           </p>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stem w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search sponsors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth"
-            />
+        {/* Quick Actions for Sponsor Role */}
+        {currentRole === 'sponsor' && (
+          <div>
+            <h2 className="text-lg font-bold text-forest mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
+                  <Building className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-forest mb-2">My Sponsorships</h3>
+                <p className="text-sm text-stem">View active sponsorships</p>
+              </button>
+              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
+                  <Users className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-forest mb-2">View Leads</h3>
+                <p className="text-sm text-stem">Access attendee leads</p>
+              </button>
+              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
+                  <BarChart3 className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-forest mb-2">View Reports</h3>
+                <p className="text-sm text-stem">ROI and analytics</p>
+              </button>
+              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
+                  <Edit2 className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-forest mb-2">Edit Profile</h3>
+                <p className="text-sm text-stem">Update brand info</p>
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => setShowAddSponsor(true)}
-            className="px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Sponsor
-          </button>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-forest">
+              {currentRole === 'sponsor' ? 'Other Sponsors' : 'All Sponsors'}
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            {currentRole !== 'sponsor' && (
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stem w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search sponsors..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth"
+                />
+              </div>
+            )}
+            {currentRole !== 'sponsor' && (
+              <button
+                onClick={() => setShowAddSponsor(true)}
+                className="px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Sponsor
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredSponsors.map(sponsor => (
             <div key={sponsor.id} className="card-brand rounded-2xl p-6 hover:border-spring hover:shadow-sm transition-all">
               <div className="flex items-start justify-between mb-6">
@@ -2061,9 +2226,9 @@ Events Team
               <h2 className="text-lg font-bold text-forest mt-2">
                 {currentRole === 'organizer' ? 'Organizer' : currentRole === 'speaker' ? 'Speaker' : 'Sponsor'}
               </h2>
-              <p className="text-xs text-stem mt-1">Switch role view for context as needed.</p>
             </div>
             <div className="px-4 pb-4">
+              <p className="text-xs text-stem mb-2">Switch role view for context as needed</p>
               <div className="bg-dew border border-mist p-1 rounded-xl grid grid-cols-3 gap-1">
                 {[
                   { id: 'organizer', label: 'Organizer' },
@@ -2182,6 +2347,13 @@ function App() {
         <Route path="/email-builder" element={<EmailMakerPage />} />
         <Route path="/add-venue" element={<VenueSubmissionPage />} />
         <Route path="/venues" element={<VenueDiscoveryPage />} />
+        <Route path="/organizers" element={<OrganizersListPage />} />
+        <Route path="/submit-event" element={<EventSubmissionPage />} />
+        <Route path="/become-organizer" element={<CertifiedOrganizerPage />} />
+        <Route path="/become-sponsor" element={<SponsorSubmissionPage />} />
+        <Route path="/become-speaker" element={<SpeakerSubmissionPage />} />
+        <Route path="/call-for-speakers" element={<CallForSpeakersPage />} />
+        <Route path="/event-services" element={<EventServicesPage />} />
       </Routes>
     </BrowserRouter>
   );

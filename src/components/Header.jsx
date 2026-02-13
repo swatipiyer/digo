@@ -16,9 +16,10 @@ export default function Header() {
           <div className="flex items-center gap-8">
             <Link
               to="/"
-              className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              digo
+              <img src="/digo.png" alt="Digo" className="w-8 h-8 rounded-lg" />
+              <span className="text-xl font-bold text-gray-900">digo</span>
             </Link>
             <nav className="flex items-center gap-8">
               <Link
@@ -27,7 +28,7 @@ export default function Header() {
                   isActive('/') ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                Plan
+                Dashboard
               </Link>
               <Link
                 to="/discover"

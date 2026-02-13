@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Grid, List, ChevronDown, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, TrendingUp, Star, Building2 } from 'lucide-react';
+import { Grid, List, ChevronDown, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, TrendingUp, Star, Building2, Search } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 
@@ -10,6 +10,8 @@ export default function DiscoverPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [currentDate, setCurrentDate] = useState(new Date(2026, 1, 1)); // February 2026
   const [userLocation, setUserLocation] = useState('Menlo Park, CA'); // Could be dynamic
+  const [searchQuery, setSearchQuery] = useState('');
+  const [timeFilter, setTimeFilter] = useState('future'); // 'future' | 'past' | 'all'
 
   // Organization data
   const organizations = {
@@ -129,7 +131,21 @@ export default function DiscoverPage() {
     const matchesOrganizer = selectedOrganizer === 'All' || event.organizer === selectedOrganizer;
     const matchesCategory = selectedCategory === 'All' || event.category === selectedCategory;
     const matchesOrgSlug = !organizerSlug || event.organizerSlug === organizerSlug;
-    return matchesOrganizer && matchesCategory && matchesOrgSlug;
+
+    // Search filter
+    const matchesSearch = searchQuery === '' ||
+      event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.organizer.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Time filter (future/past)
+    const eventDate = new Date(event.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    const matchesTime = timeFilter === 'all' ? true :
+      timeFilter === 'future' ? eventDate >= today : eventDate < today;
+
+    return matchesOrganizer && matchesCategory && matchesOrgSlug && matchesSearch && matchesTime;
   });
 
   // Get featured events
@@ -251,6 +267,41 @@ export default function DiscoverPage() {
           </div>
         )}
 
+        {/* Search Bar */}
+        {!currentOrganization && (
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search events or locations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-900"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Category Filters */}
+        {!currentOrganization && (
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            {['All', 'Technology', 'Networking', 'Design', 'Business'].map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* View Mode Toggle & Organizer Filter */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -279,8 +330,38 @@ export default function DiscoverPage() {
             )}
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+          {/* Future/Past Toggle & View Mode Toggle */}
+          <div className="flex items-center gap-3">
+            {/* Future/Past Toggle */}
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+              <button
+                onClick={() => setTimeFilter('future')}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  timeFilter === 'future' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Future
+              </button>
+              <button
+                onClick={() => setTimeFilter('past')}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  timeFilter === 'past' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Past
+              </button>
+              <button
+                onClick={() => setTimeFilter('all')}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  timeFilter === 'all' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                All
+              </button>
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded transition-colors ${
@@ -308,6 +389,7 @@ export default function DiscoverPage() {
             >
               <CalendarIcon className="w-5 h-5 text-gray-700" />
             </button>
+            </div>
           </div>
         </div>
 
