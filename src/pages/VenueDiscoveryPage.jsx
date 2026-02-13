@@ -17,7 +17,7 @@ export default function VenueDiscoveryPage() {
       description: 'Modern tech hub with state-of-the-art AV equipment and flexible seating arrangements.',
       amenities: ['WiFi', 'Projector', 'Sound System', 'Catering Kitchen', 'Parking'],
       verified: true,
-      position: { top: '32%', left: '28%' },
+      position: { top: '55%', left: '50%' },
       color: 'bg-red-500',
     },
     {
@@ -29,7 +29,7 @@ export default function VenueDiscoveryPage() {
       description: 'Innovation hub with multiple event spaces and networking areas.',
       amenities: ['WiFi', 'Stage', 'Sound System', 'Video Recording', 'Parking'],
       verified: true,
-      position: { top: '52%', left: '52%' },
+      position: { top: '72%', left: '62%' },
       color: 'bg-purple-600',
     },
     {
@@ -41,7 +41,7 @@ export default function VenueDiscoveryPage() {
       description: 'Intimate venue perfect for workshops and networking events.',
       amenities: ['WiFi', 'Whiteboard', 'Projector', 'Coffee Bar'],
       verified: false,
-      position: { top: '42%', left: '34%' },
+      position: { top: '67%', left: '56%' },
       color: 'bg-indigo-500',
     },
     {
@@ -53,7 +53,7 @@ export default function VenueDiscoveryPage() {
       description: 'Unique venue with exhibits and modern event spaces for tech-focused gatherings.',
       amenities: ['WiFi', 'Museum Access', 'Catering', 'AV Equipment', 'Parking'],
       verified: true,
-      position: { top: '48%', left: '45%' },
+      position: { top: '62%', left: '58%' },
       color: 'bg-pink-500',
     },
     {
@@ -65,7 +65,7 @@ export default function VenueDiscoveryPage() {
       description: 'Academic venue with various halls and auditoriums available for events.',
       amenities: ['WiFi', 'Auditorium', 'Lecture Halls', 'Parking'],
       verified: true,
-      position: { top: '45%', left: '40%' },
+      position: { top: '60%', left: '52%' },
       color: 'bg-amber-500',
     },
     {
@@ -77,7 +77,7 @@ export default function VenueDiscoveryPage() {
       description: 'Large university campus with multiple event venues and facilities.',
       amenities: ['WiFi', 'Conference Rooms', 'Theater', 'Parking'],
       verified: false,
-      position: { top: '65%', left: '68%' },
+      position: { top: '82%', left: '68%' },
       color: 'bg-orange-400',
     },
     {
@@ -89,7 +89,7 @@ export default function VenueDiscoveryPage() {
       description: 'College campus with modern facilities and beautiful outdoor spaces.',
       amenities: ['WiFi', 'Event Hall', 'Outdoor Space', 'Parking'],
       verified: false,
-      position: { top: '38%', left: '32%' },
+      position: { top: '52%', left: '47%' },
       color: 'bg-yellow-500',
     },
   ];
@@ -110,8 +110,8 @@ export default function VenueDiscoveryPage() {
           </Link>
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Discover Venues</h1>
-              <p className="text-lg text-gray-600">Find the perfect venue for your next event in the SF Bay Area</p>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Digo Venues</h1>
+              <p className="text-lg text-gray-600">Find a venue for your next event</p>
             </div>
             <Link
               to="/add-venue"
@@ -127,54 +127,15 @@ export default function VenueDiscoveryPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Map */}
           <div className="lg:col-span-2">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 h-[600px] relative overflow-hidden">
-              <div className="text-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">Join us at the heart of</h2>
-                <h3 className="text-3xl font-bold text-gray-900">Silicon Valley</h3>
-              </div>
-
-              {/* SF Bay Area Map Representation */}
-              <div className="relative h-[480px] bg-gradient-to-br from-blue-100 via-blue-50 to-gray-100 rounded-lg border-2 border-gray-300 overflow-hidden">
-                {/* California shape representation */}
-                <div className="absolute inset-0">
-                  {/* San Francisco Bay (water) */}
-                  <div className="absolute top-[20%] left-[15%] w-[35%] h-[40%] bg-blue-200 opacity-40 rounded-full transform -rotate-12"></div>
-
-                  {/* Peninsula (land) */}
-                  <div className="absolute bottom-0 left-0 right-0 h-[60%] bg-gradient-to-t from-gray-100 to-transparent"></div>
-
-                  {/* Diagonal pattern for land/water boundary */}
-                  <div
-                    className="absolute top-[15%] left-[10%] w-[25%] h-[70%] opacity-20"
-                    style={{
-                      background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, #9ca3af 10px, #9ca3af 12px)'
-                    }}
-                  ></div>
-                </div>
-
-                {/* Venue Markers */}
-                {venues.map((venue) => (
-                  <button
-                    key={venue.id}
-                    onClick={() => setSelectedVenue(venue)}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all hover:scale-110 group z-10"
-                    style={{ top: venue.position.top, left: venue.position.left }}
-                  >
-                    <div className={`relative ${venue.color} text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg shadow-lg hover:shadow-xl transition-shadow`}>
-                      {venue.id}
-                      {venue.verified && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
-                          <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                        </div>
-                      )}
-                    </div>
-                    {/* Tooltip on hover */}
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                      {venue.name}
-                    </div>
-                  </button>
-                ))}
-              </div>
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden h-[600px]">
+              <iframe
+                title="Bay Area Venues Map"
+                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d202406.12676862!2d-122.08!3d37.44!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus"
+                className="w-full h-full border-0"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
           </div>
 
@@ -191,8 +152,8 @@ export default function VenueDiscoveryPage() {
                     <div>
                       <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedVenue.name}</h3>
                       {selectedVenue.verified && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full">
-                          <Check className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full">
+                          <img src="/digo.png" alt="Digo" className="w-3.5 h-3.5" />
                           Verified
                         </span>
                       )}
@@ -253,7 +214,7 @@ export default function VenueDiscoveryPage() {
             ) : (
               // Venue Legend
               <div className="bg-white border border-gray-200 rounded-lg p-6 sticky top-4">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Bay Area Venues</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Top Event Venues</h3>
                 <div className="space-y-3">
                   {venues.map((venue) => (
                     <button
@@ -264,8 +225,8 @@ export default function VenueDiscoveryPage() {
                       <div className={`${venue.color} text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0 relative`}>
                         {venue.id}
                         {venue.verified && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
-                            <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                          <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full overflow-hidden border-2 border-white">
+                            <img src="/digo.png" alt="Verified" className="w-full h-full object-cover" />
                           </div>
                         )}
                       </div>
@@ -281,10 +242,8 @@ export default function VenueDiscoveryPage() {
 
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                      <Check className="w-2 h-2 text-white" strokeWidth={3} />
-                    </div>
-                    <span>= Verified Venue</span>
+                    <img src="/digo.png" alt="Digo" className="w-4 h-4" />
+                    <span>= Digo Verified Venue</span>
                   </div>
                 </div>
               </div>

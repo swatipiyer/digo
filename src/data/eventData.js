@@ -56,6 +56,7 @@ export const eventsBySlug = {
         videoUrl: 'https://www.youtube.com/embed/QYcf1RiKs4U',
         presentationUrl: '#',
         presentationTitle: 'MCP Overview (PDF)',
+        tags: ['AI', 'Protocol', 'Integration', 'Tools'],
       },
       {
         id: 'keynote-building-blocks',
@@ -69,6 +70,7 @@ export const eventsBySlug = {
         videoUrl: 'https://www.youtube.com/embed/yXBXQ_Xd2pc',
         presentationUrl: '#',
         presentationTitle: 'AI Building Blocks (PDF)',
+        tags: ['AI', 'Architecture', 'Production', 'Systems'],
       },
       {
         id: 'workshop-ai-agents',
@@ -82,6 +84,7 @@ export const eventsBySlug = {
         videoUrl: 'https://www.youtube.com/embed/vhfWOBSZvf0',
         presentationUrl: '#',
         presentationTitle: 'Workshop Slides (PDF)',
+        tags: ['AI Agents', 'Workshop', 'Hands-On', 'Frameworks'],
       },
       {
         id: 'workshop-advanced',
@@ -95,6 +98,7 @@ export const eventsBySlug = {
         videoUrl: 'https://www.youtube.com/embed/ap4q4sAK4OY',
         presentationUrl: '#',
         presentationTitle: 'Advanced Workshop Slides (PDF)',
+        tags: ['AI Agents', 'Advanced', 'Reasoning', 'Workshop'],
       },
     ],
   },

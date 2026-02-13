@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Video, FileText, ExternalLink, Mic, HelpCircle, Star, CheckSquare, Send, CheckCircle, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Video, FileText, ExternalLink, Mic, HelpCircle, Star, CheckSquare, Send, CheckCircle, MessageCircle, Linkedin, Twitter, Share2, Tag } from 'lucide-react';
 import { getEvent, getSession, getSpeaker } from '../data/eventData';
 import Header from '../components/Header';
+import { copyToClipboard } from '../utils/mediaKitGenerator';
 
 // Default quiz for any session (can be overridden per-session in data later)
 const DEFAULT_QUIZ = [
@@ -34,6 +35,30 @@ export default function SessionDetailPage() {
   const [taskChecks, setTaskChecks] = useState({});
   const [taskNotes, setTaskNotes] = useState('');
   const [taskSubmitted, setTaskSubmitted] = useState(false);
+  const [showShareToast, setShowShareToast] = useState(false);
+
+  const handleLinkedInShare = () => {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(session.title);
+    const summary = encodeURIComponent(session.description || `Check out this session from ${event.name}`);
+    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}&summary=${summary}`;
+    window.open(linkedInUrl, '_blank', 'width=600,height=600');
+  };
+
+  const handleTwitterShare = () => {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`${session.title} at ${event.name}`);
+    const twitterUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+    window.open(twitterUrl, '_blank', 'width=600,height=600');
+  };
+
+  const handleCopyLink = async () => {
+    const success = await copyToClipboard(window.location.href);
+    if (success) {
+      setShowShareToast(true);
+      setTimeout(() => setShowShareToast(false), 2000);
+    }
+  };
 
   if (!event || !session) {
     return (
@@ -57,14 +82,14 @@ export default function SessionDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-        {/* Breadcrumb */}
-        <nav className="text-xs sm:text-sm text-gray-600 mb-2">
-          <Link to="/" className="hover:text-gray-900">digo</Link>
-          <span className="mx-2">/</span>
-          <Link to={`/events/${eventId}`} className="hover:text-gray-900">{event.name}</Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900 font-medium">{session.title}</span>
-        </nav>
+        {/* Back to Event Button */}
+        <Link
+          to={`/events/${eventId}`}
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 font-medium"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to {event.name}
+        </Link>
 
         {/* Session title & meta */}
         <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
@@ -79,8 +104,49 @@ export default function SessionDetailPage() {
             </span>
           </div>
           {session.description && (
-            <p className="text-sm text-gray-600 leading-relaxed">{session.description}</p>
+            <p className="text-sm text-gray-600 leading-relaxed mb-4">{session.description}</p>
           )}
+
+          {/* Tags */}
+          {session.tags && session.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {session.tags.map((tag, index) => (
+                <Link
+                  key={index}
+                  to={`/events/${eventId}?tag=${encodeURIComponent(tag)}`}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-colors"
+                >
+                  <Tag className="w-3 h-3" />
+                  {tag}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Share Buttons */}
+          <div className="flex gap-2 pt-3 border-t border-gray-200">
+            <button
+              onClick={handleLinkedInShare}
+              className="flex items-center gap-2 px-4 py-2 bg-[#0077b5] text-white rounded-lg text-sm font-medium hover:bg-[#006399] transition-colors"
+            >
+              <Linkedin className="w-4 h-4" />
+              Share on LinkedIn
+            </button>
+            <button
+              onClick={handleTwitterShare}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] text-white rounded-lg text-sm font-medium hover:bg-[#1a8cd8] transition-colors"
+            >
+              <Twitter className="w-4 h-4" />
+              Share on Twitter
+            </button>
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-white text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            >
+              <Share2 className="w-4 h-4" />
+              Copy Link
+            </button>
+          </div>
         </section>
 
         {/* Video */}
@@ -378,6 +444,16 @@ export default function SessionDetailPage() {
           )}
         </div>
       </main>
+
+      {/* Share Toast */}
+      {showShareToast && (
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-grow-in">
+          <div className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+            <p className="text-sm font-medium">Link copied to clipboard!</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
