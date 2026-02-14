@@ -48,6 +48,15 @@ export default function EventPage() {
   const [sharePlatform, setSharePlatform] = useState('linkedin'); // 'email', 'linkedin', 'twitter', 'instagram'
   const [templateIndex, setTemplateIndex] = useState(0);
   const [shortUrl, setShortUrl] = useState(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    name: '',
+    email: '',
+    date: '',
+    time: '',
+    attendees: '',
+    message: ''
+  });
   const [isGeneratingUrl, setIsGeneratingUrl] = useState(false);
   const [selectedTag, setSelectedTag] = useState(null);
 
@@ -240,6 +249,30 @@ END:VCALENDAR`;
     setToastMessage(message);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleRequestAvailability = () => {
+    setShowBookingModal(true);
+  };
+
+  const handleBookingFormChange = (field, value) => {
+    setBookingForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmitBookingRequest = (e) => {
+    e.preventDefault();
+    // Here you would normally send the booking request to your backend
+    console.log('Booking request submitted:', bookingForm);
+    showSuccessToast(`Booking request sent! We'll get back to you soon at ${bookingForm.email}`);
+    setShowBookingModal(false);
+    setBookingForm({
+      name: '',
+      email: '',
+      date: '',
+      time: '',
+      attendees: '',
+      message: ''
+    });
   };
 
   const handleLivestreamRegister = () => {
@@ -693,6 +726,14 @@ END:VCALENDAR`;
                   <FileText className="w-4 h-4" />
                   Media Kit
                 </Link>
+                <button
+                  type="button"
+                  onClick={handleRequestAvailability}
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-all active:scale-95"
+                >
+                  <Calendar className="w-4 h-4" />
+                  Request Availability
+                </button>
               </div>
 
               {/* Share confirmation toast */}
@@ -822,6 +863,7 @@ END:VCALENDAR`;
                 ) : (
                   selectedSpeaker.name.charAt(0)
                 )}
+              </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedSpeaker.name}</h3>
                 <p className="text-sm text-gray-600">{selectedSpeaker.company}</p>
@@ -1020,6 +1062,153 @@ END:VCALENDAR`;
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Request Modal */}
+      {showBookingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="border-b border-gray-200 p-6 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900">Request Availability</h2>
+              <button
+                onClick={() => setShowBookingModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitBookingRequest} className="p-6 space-y-6">
+              {/* Event Info */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-bold text-gray-900 mb-2">{event?.name}</h3>
+                <div className="space-y-1 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>{event?.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    <span>{event?.location}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    required
+                    value={bookingForm.name}
+                    onChange={(e) => handleBookingFormChange('name', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="John Doe"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    required
+                    value={bookingForm.email}
+                    onChange={(e) => handleBookingFormChange('email', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="john@example.com"
+                  />
+                </div>
+              </div>
+
+              {/* Event Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                    Preferred Date *
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    required
+                    value={bookingForm.date}
+                    onChange={(e) => handleBookingFormChange('date', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
+                    Preferred Time *
+                  </label>
+                  <input
+                    type="time"
+                    id="time"
+                    required
+                    value={bookingForm.time}
+                    onChange={(e) => handleBookingFormChange('time', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="attendees" className="block text-sm font-medium text-gray-700 mb-2">
+                    # of Attendees *
+                  </label>
+                  <input
+                    type="number"
+                    id="attendees"
+                    required
+                    min="1"
+                    value={bookingForm.attendees}
+                    onChange={(e) => handleBookingFormChange('attendees', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="50"
+                  />
+                </div>
+              </div>
+
+              {/* Message */}
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                  Additional Details / Special Requests
+                </label>
+                <textarea
+                  id="message"
+                  rows="4"
+                  value={bookingForm.message}
+                  onChange={(e) => handleBookingFormChange('message', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 resize-none"
+                  placeholder="Tell us about your event needs, setup requirements, catering preferences, A/V requirements, etc."
+                ></textarea>
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-all active:scale-95"
+                >
+                  Submit Request
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBookingModal(false)}
+                  className="px-6 py-3 border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-500 text-center">
+                We'll review your request and get back to you within 24 hours
+              </p>
+            </form>
           </div>
         </div>
       )}

@@ -8,6 +8,7 @@ export const eventsBySlug = {
     time: '5:00 PM',
     location: 'Snowflake Silicon Valley AI Hub, 8th Floor',
     address: '135 Constitution Dr, Menlo Park, CA 94025',
+    registrationUrl: 'https://lu.ma/ay5c9dw3',
     description: 'Join developers, founders, and professionals to explore how frontier AI systems and agent-based architectures are built, evaluated, and applied. Features keynotes from Meta and Snowflake engineers plus hands-on workshops.',
     scheduleNote: '5:00–6:00 PM Registration · 6:00–6:15 PM Welcome · 6:15–7:00 PM Keynotes · 7:20–8:20 PM Workshops · 8:20–9:00 PM Networking',
     speakers: [

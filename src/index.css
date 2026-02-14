@@ -287,12 +287,50 @@ body {
   }
 }
 
+@keyframes supportCarouselScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 .animate-grow {
   animation: growIn var(--transition-complex) forwards;
 }
 
 .animate-bloom {
   animation: bloom var(--transition-growth) forwards;
+}
+
+.support-carousel-track {
+  display: flex;
+  width: max-content;
+  gap: 12px;
+  animation: supportCarouselScroll 28s linear infinite;
+}
+
+.support-carousel-track:hover {
+  animation-play-state: paused;
+}
+
+.support-company-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  padding: 10px 16px;
+}
+
+.support-company-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #111827;
 }
 
 /* Scrollbar Styling */

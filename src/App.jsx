@@ -290,12 +290,40 @@ const Dashboard = () => {
         action: () => setShowInviteSponsors(true)
       }
     ];
+    const supportingCompanies = [
+      'Snowflake',
+      'Meta',
+      'TechEquity',
+      'OpenAI',
+      'Databricks',
+      'NVIDIA',
+      'Microsoft',
+      'Google',
+    ];
 
     return (
       <div className="space-y-8">
-        <div>
+        <div className="bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-2xl p-6">
+          <p className="text-xs uppercase tracking-[0.2em] text-gray-600 mb-2">Welcome Back</p>
           <h1 className="text-4xl font-bold text-forest mb-2">Overview</h1>
-          <p className="text-stem">Your organizer workspace for events, speakers, and sponsors.</p>
+          <p className="text-stem">Your organizer workspace for events, sessions, sponsors, and promotion tools.</p>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-2xl font-bold text-forest">Companies That Support</h2>
+            <p className="text-sm text-stem">Trusted by our event ecosystem</p>
+          </div>
+          <div className="card-brand rounded-2xl p-4 overflow-hidden">
+            <div className="support-carousel-track">
+              {[...supportingCompanies, ...supportingCompanies].map((company, idx) => (
+                <div key={`${company}-${idx}`} className="support-company-chip">
+                  <span className="support-company-dot" />
+                  <span className="text-sm font-semibold text-gray-800">{company}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Quick Actions */}

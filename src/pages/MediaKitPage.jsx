@@ -144,22 +144,26 @@ export default function MediaKitPage() {
       linkedin: {
         organizer: `🎤 Excited to announce our upcoming event: ${event?.name}!\n\n📅 ${event?.date}\n📍 ${event?.location}\n\nJoin us for an incredible lineup of speakers and sessions.\n\nRegister now: [Link]\n\n#${event?.name?.replace(/\s+/g, '')} #TechEvents #Community`,
         speaker: `I'm thrilled to be speaking at ${event?.name}!\n\n📅 ${event?.date}\n📍 ${event?.location}\n\nI'll be sharing insights on [Your Topic]. Hope to see you there!\n\nRegister: [Link]\n\n#${event?.name?.replace(/\s+/g, '')} #Speaking`,
-        attendee: `Looking forward to attending ${event?.name}!\n\n📅 ${event?.date}\n📍 ${event?.location}\n\nGreat lineup of speakers and content. See you there!\n\n#${event?.name?.replace(/\s+/g, '')}`
+        attendee: `Looking forward to attending ${event?.name}!\n\n📅 ${event?.date}\n📍 ${event?.location}\n\nGreat lineup of speakers and content. See you there!\n\n#${event?.name?.replace(/\s+/g, '')}`,
+        marketing: `We're excited to promote ${event?.name}.\n\n📅 ${event?.date}\n📍 ${event?.location}\n\nUse approved assets from the media kit and help us drive registrations this week.\n\nRegister now: [Link]\n\n#${event?.name?.replace(/\s+/g, '')} #Marketing #EventPromotion`
       },
       twitter: {
         organizer: `🎤 ${event?.name} - ${event?.date}\n\n📍 ${event?.location}\n\nAmazing speakers, incredible content. Register now! 🎟️\n\n[Link]\n\n#${event?.name?.replace(/\s+/g, '')}`,
         speaker: `Excited to speak at ${event?.name}! ${event?.date} 🎤\n\nJoin me to learn about [Topic] 💡\n\nRegister: [Link]`,
-        attendee: `Can't wait for ${event?.name}! ${event?.date} 🎉\n\nSee you there! #${event?.name?.replace(/\s+/g, '')}`
+        attendee: `Can't wait for ${event?.name}! ${event?.date} 🎉\n\nSee you there! #${event?.name?.replace(/\s+/g, '')}`,
+        marketing: `We're promoting ${event?.name} (${event?.date}).\n\nPlease share with your teams and networks: [Link]\n\n#${event?.name?.replace(/\s+/g, '')} #EventMarketing`
       },
       instagram: {
         organizer: `🎤 ${event?.name}\n📅 ${event?.date}\n📍 ${event?.location}\n\n✨ Register now - link in bio!\n\n#${event?.name?.replace(/\s+/g, '')} #TechEvents`,
         speaker: `Speaking at ${event?.name}! 🎤\n${event?.date}\n\nSee you there! ✨\n\n#${event?.name?.replace(/\s+/g, '')}`,
-        attendee: `Attending ${event?.name}! 🎉\n${event?.date}\n\n#${event?.name?.replace(/\s+/g, '')}`
+        attendee: `Attending ${event?.name}! 🎉\n${event?.date}\n\n#${event?.name?.replace(/\s+/g, '')}`,
+        marketing: `Promotion toolkit live for ${event?.name}.\n\n📅 ${event?.date}\n📍 ${event?.location}\n\nUse approved event assets and share.\n\n#${event?.name?.replace(/\s+/g, '')} #Marketing`
       },
       email: {
         organizer: `Subject: You're Invited: ${event?.name}\n\nHello,\n\nWe're excited to invite you to ${event?.name}, taking place on ${event?.date} at ${event?.location}.\n\nJoin us for an incredible day of learning, networking, and inspiration.\n\nRegister here: [Link]\n\nBest regards,\n[Your Name]`,
         speaker: `Subject: Join me at ${event?.name}\n\nHi,\n\nI'm speaking at ${event?.name} on ${event?.date}, and I'd love for you to attend!\n\nI'll be presenting on [Your Topic] and would value your presence and insights.\n\nRegister: [Link]\n\nHope to see you there!\n[Your Name]`,
-        attendee: `Subject: ${event?.name} - See you there!\n\nHi,\n\nI wanted to let you know I'm attending ${event?.name} on ${event?.date}.\n\nThe lineup looks amazing! Will I see you there?\n\nRegister: [Link]\n\nBest,\n[Your Name]`
+        attendee: `Subject: ${event?.name} - See you there!\n\nHi,\n\nI wanted to let you know I'm attending ${event?.name} on ${event?.date}.\n\nThe lineup looks amazing! Will I see you there?\n\nRegister: [Link]\n\nBest,\n[Your Name]`,
+        marketing: `Subject: Marketing kit for ${event?.name}\n\nTeam,\n\nPlease use the approved media kit assets to promote ${event?.name}.\n\nEvent details:\n📅 ${event?.date}\n📍 ${event?.location}\n\nPrimary CTA: Register here [Link]\n\nThank you for helping us drive attendance.\n\n- Event Marketing`
       }
     };
 
@@ -421,7 +425,7 @@ export default function MediaKitPage() {
 
               {/* Role Selector */}
               <div className="flex gap-2 mb-4">
-                {['organizer', 'speaker', 'attendee'].map((role) => (
+                {['organizer', 'speaker', 'attendee', 'marketing'].map((role) => (
                   <button
                     key={role}
                     onClick={() => setSelectedRole(role)}

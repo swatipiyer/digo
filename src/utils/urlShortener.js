@@ -1,7 +1,7 @@
 // URL Shortening utility for share links
 // Integrates with Bitly API for professional short links
 
-const BITLY_API_TOKEN = process.env.REACT_APP_BITLY_API_TOKEN || null;
+const BITLY_API_TOKEN = import.meta.env.VITE_BITLY_API_TOKEN || null;
 const BITLY_API_URL = 'https://api-ssl.bitly.com/v4/shorten';
 
 // Cache for shortened URLs to avoid duplicate API calls

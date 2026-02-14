@@ -91,6 +91,18 @@ export default function SessionDetailPage() {
           Back to {event.name}
         </Link>
 
+        {event.registrationUrl && (
+          <a
+            href={event.registrationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Go to Event Registration
+          </a>
+        )}
+
         {/* Session title & meta */}
         <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
           <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-900 mb-2 sm:mb-3">
