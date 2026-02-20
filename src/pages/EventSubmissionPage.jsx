@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin, Globe, Users, FileText, Tag, ArrowLeft, Check } from 'lucide-react';
-import Header from '../components/Header';
+import { Calendar, MapPin, Globe, Users, FileText, Tag, ArrowLeft, Check, Link as LinkIcon, Loader2 } from 'lucide-react';
 
 export default function EventSubmissionPage() {
   const [formData, setFormData] = useState({
@@ -18,6 +17,35 @@ export default function EventSubmissionPage() {
     organizerEmail: '',
   });
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState('');
+
+  const handleImportFromUrl = async () => {
+    if (!importUrl.trim()) return;
+    setIsImporting(true);
+    setImportError('');
+    // Simulate URL scraping with a delay
+    setTimeout(() => {
+      try {
+        // Demo: pre-fill with sample data based on URL
+        const isLuma = importUrl.includes('lu.ma');
+        const isEventbrite = importUrl.includes('eventbrite');
+        setFormData(prev => ({
+          ...prev,
+          eventName: isLuma ? 'Imported Luma Event' : isEventbrite ? 'Imported Eventbrite Event' : 'Imported Event',
+          description: 'Event details imported from ' + importUrl + '. Please review and update as needed.',
+          category: 'Technology',
+          eventType: 'in-person',
+          location: 'San Francisco, CA',
+        }));
+        setIsImporting(false);
+      } catch {
+        setImportError('Could not import from this URL. Please fill in the details manually.');
+        setIsImporting(false);
+      }
+    }, 1500);
+  };
 
   const categories = [
     'Technology',
@@ -59,17 +87,16 @@ export default function EventSubmissionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
         <div className="mb-8">
           <Link
-            to="/discover"
+            to="/"
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Discover
+            Back to Home
           </Link>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -78,6 +105,50 @@ export default function EventSubmissionPage() {
             <h1 className="text-3xl font-bold text-gray-900">Submit Your Event</h1>
           </div>
           <p className="text-gray-600">Share your event with the Digo community</p>
+        </div>
+
+        {/* Import from URL */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">Import from URL</h3>
+          <p className="text-xs text-gray-500 mb-3">Paste a link from Luma, Eventbrite, or any event page to auto-fill details</p>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <LinkIcon className="w-4 h-4 text-gray-400" />
+              </div>
+              <input
+                type="url"
+                value={importUrl}
+                onChange={(e) => { setImportUrl(e.target.value); setImportError(''); }}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                placeholder="https://lu.ma/your-event or https://eventbrite.com/..."
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleImportFromUrl}
+              disabled={!importUrl.trim() || isImporting}
+              className="px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+            >
+              {isImporting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Importing...
+                </>
+              ) : (
+                'Import'
+              )}
+            </button>
+          </div>
+          {importError && (
+            <p className="text-xs text-red-600 mt-2">{importError}</p>
+          )}
+        </div>
+
+        <div className="relative flex items-center mb-6">
+          <div className="flex-grow border-t border-gray-200"></div>
+          <span className="flex-shrink mx-4 text-xs text-gray-400 font-medium">or fill in manually</span>
+          <div className="flex-grow border-t border-gray-200"></div>
         </div>
 
         {/* Submission Form */}

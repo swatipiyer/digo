@@ -1,63 +1,240 @@
-import React, { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Video, FileText, ExternalLink, Mic, HelpCircle, Star, CheckSquare, Send, CheckCircle, MessageCircle, Linkedin, Twitter, Share2, Tag } from 'lucide-react';
+import XLogo from '../components/XLogo';
+import {
+  ArrowLeft,
+  Clock,
+  Video,
+  FileText,
+  ExternalLink,
+  Mic,
+  Star,
+  Send,
+  CheckCircle,
+  MessageCircle,
+  Linkedin,
+  Share2,
+  MapPin,
+  UserPlus,
+  Copy,
+  PlayCircle,
+  ChevronLeft,
+  ChevronRight,
+  Smile,
+  Image,
+  Plus,
+  Upload,
+  X,
+  Calendar,
+  Download,
+  Trash2,
+} from 'lucide-react';
 import { getEvent, getSession, getSpeaker } from '../data/eventData';
-import Header from '../components/Header';
 import { copyToClipboard } from '../utils/mediaKitGenerator';
+import { convertFileToBase64, compressImage } from '../utils/photoStorage';
 
-// Default quiz for any session (can be overridden per-session in data later)
-const DEFAULT_QUIZ = [
-  { id: 1, question: 'What is a key focus of frontier AI research?', options: ['Only narrow tasks', 'Scalability and general capabilities', 'Hardware only'], correct: 1 },
-  { id: 2, question: 'When building an AI agent, what is important first?', options: ['Choosing a cloud provider', 'Defining the agent’s goal and tools', 'Picking a programming language'], correct: 1 },
-  { id: 3, question: 'How do superintelligence-oriented labs typically approach safety?', options: ['Ignore it until later', 'Bake it in from the start', 'Only external audits'], correct: 1 },
-];
+function normalizeStage(stage) {
+  if (stage === 'planning') return 'before';
+  if (stage === 'livestream') return 'during';
+  if (stage === 'summary') return 'after';
+  return stage || 'after';
+}
 
-// Default implementation task steps (generic for AI/agents)
-const DEFAULT_TASK_STEPS = [
-  'Define a clear goal or task for your agent',
-  'List the tools or APIs the agent can use',
-  'Sketch or write the decision flow (when to use which tool)',
-  'Test with one example input and refine',
-];
+// localStorage helpers
+const getSessionKey = (eventId, sessionSlug) => `digo_session_${eventId}_${sessionSlug}`;
+
+function loadSessionData(eventId, sessionSlug) {
+  try {
+    const data = JSON.parse(localStorage.getItem(getSessionKey(eventId, sessionSlug)) || '{}');
+    return {
+      comments: data.comments || [],
+      posts: data.posts || [],
+      uploadedSlides: data.uploadedSlides || [],
+      isFollowing: data.isFollowing || false,
+    };
+  } catch { return { comments: [], posts: [], uploadedSlides: [], isFollowing: false }; }
+}
+
+function saveSessionData(eventId, sessionSlug, data) {
+  localStorage.setItem(getSessionKey(eventId, sessionSlug), JSON.stringify(data));
+}
 
 export default function SessionDetailPage() {
-  const { eventId, sessionSlug } = useParams();
+  const { eventId, sessionSlug, stage } = useParams();
   const event = getEvent(eventId);
   const session = getSession(eventId, sessionSlug);
   const speaker = session ? getSpeaker(eventId, session.speakerId) : null;
+  const eventStage = stage && ['before', 'during', 'after'].includes(stage) ? stage : normalizeStage(event?.stage);
 
-  const [quizAnswers, setQuizAnswers] = useState({});
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewHover, setReviewHover] = useState(0);
-  const [reviewText, setReviewText] = useState('');
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
-  const [taskChecks, setTaskChecks] = useState({});
-  const [taskNotes, setTaskNotes] = useState('');
-  const [taskSubmitted, setTaskSubmitted] = useState(false);
-  const [showShareToast, setShowShareToast] = useState(false);
+  // Load persisted data
+  const persisted = session ? loadSessionData(eventId, sessionSlug) : { comments: [], posts: [], uploadedSlides: [], isFollowing: false };
+
+  const [isFollowing, setIsFollowing] = useState(persisted.isFollowing);
+  const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState(persisted.comments);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [resourceIndex, setResourceIndex] = useState(0);
+  const [postText, setPostText] = useState('');
+  const [postImage, setPostImage] = useState(null);
+  const [posts, setPosts] = useState(persisted.posts);
+  const [uploadedSlides, setUploadedSlides] = useState(persisted.uploadedSlides);
+  const [isUploading, setIsUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const postImageRef = useRef(null);
+  const uploadRef = useRef(null);
+
+  // Persist data on changes
+  useEffect(() => {
+    if (!session) return;
+    saveSessionData(eventId, sessionSlug, {
+      comments,
+      posts,
+      uploadedSlides,
+      isFollowing,
+    });
+  }, [comments, posts, uploadedSlides, isFollowing, eventId, sessionSlug, session]);
+
+  // Build resources array — includes both static event data resources + user-uploaded slides
+  const resources = [];
+  if (session) {
+    if (session.videoUrl) {
+      resources.push({ type: 'video', url: session.videoUrl, title: 'Recording' });
+    }
+    if (session.presentationUrl && session.presentationUrl !== '#') {
+      resources.push({ type: 'slides', url: session.presentationUrl, title: session.presentationTitle || 'Slides' });
+    }
+    // Add user-uploaded slides
+    uploadedSlides.forEach((slide) => {
+      resources.push({ type: 'uploaded', ...slide });
+    });
+  }
+
+  const showSuccessToast = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
 
   const handleLinkedInShare = () => {
     const url = encodeURIComponent(window.location.href);
-    const title = encodeURIComponent(session.title);
-    const summary = encodeURIComponent(session.description || `Check out this session from ${event.name}`);
-    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}&summary=${summary}`;
-    window.open(linkedInUrl, '_blank', 'width=600,height=600');
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=600');
   };
 
-  const handleTwitterShare = () => {
+  const handleXShare = () => {
     const url = encodeURIComponent(window.location.href);
     const text = encodeURIComponent(`${session.title} at ${event.name}`);
-    const twitterUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
-    window.open(twitterUrl, '_blank', 'width=600,height=600');
+    window.open(`https://x.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=600');
   };
 
   const handleCopyLink = async () => {
     const success = await copyToClipboard(window.location.href);
     if (success) {
-      setShowShareToast(true);
-      setTimeout(() => setShowShareToast(false), 2000);
+      showSuccessToast('Link copied to clipboard!');
     }
+  };
+
+  const handlePostComment = () => {
+    if (!commentText.trim()) return;
+    setComments(prev => [...prev, {
+      id: Date.now(),
+      author: 'You',
+      text: commentText,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    }]);
+    setCommentText('');
+  };
+
+  const handlePublishPost = async () => {
+    if (!postText.trim() && !postImage) return;
+    let imageData = null;
+    if (postImage) {
+      try {
+        imageData = await convertFileToBase64(postImage);
+        imageData = await compressImage(imageData, 600, 0.7);
+      } catch {
+        imageData = null;
+      }
+    }
+    setPosts(prev => [...prev, {
+      id: Date.now(),
+      author: 'Swati Iyer',
+      text: postText,
+      image: imageData,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    }]);
+    setPostText('');
+    setPostImage(null);
+  };
+
+  // Slide upload handler — converts to base64, stores in localStorage
+  const handleSlideUpload = async (file) => {
+    if (!file) return;
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'video/mp4', 'video/webm', 'video/quicktime',
+    ];
+
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|ppt|pptx|png|jpg|jpeg|gif|webp|mp4|webm|mov)$/i)) {
+      showSuccessToast('Please upload photos, videos, slides, or documents');
+      return;
+    }
+    if (file.size > maxSize) {
+      showSuccessToast('File too large. Maximum size is 10MB.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      let base64 = await convertFileToBase64(file);
+
+      // Compress images
+      if (file.type.startsWith('image/')) {
+        base64 = await compressImage(base64, 1200, 0.85);
+      }
+
+      const slide = {
+        id: `slide_${Date.now()}`,
+        title: file.name.replace(/\.[^/.]+$/, ''),
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        dataUrl: base64,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: 'Swati Iyer',
+      };
+
+      setUploadedSlides(prev => [...prev, slide]);
+      showSuccessToast(`"${slide.title}" uploaded successfully!`);
+    } catch (err) {
+      showSuccessToast('Upload failed. File may be too large for storage.');
+    } finally {
+      setIsUploading(false);
+      if (uploadRef.current) uploadRef.current.value = '';
+    }
+  };
+
+  const handleRemoveSlide = (slideId) => {
+    setUploadedSlides(prev => prev.filter(s => s.id !== slideId));
+    showSuccessToast('Slide removed');
+  };
+
+  const handleUploadDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true);
+    else if (e.type === 'dragleave') setDragActive(false);
+  };
+
+  const handleUploadDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files?.[0]) handleSlideUpload(e.dataTransfer.files[0]);
   };
 
   if (!event || !session) {
@@ -75,394 +252,497 @@ export default function SessionDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <Header />
-
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Main content */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-        {/* Back to Event Button */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* Back */}
         <Link
           to={`/events/${eventId}`}
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 font-medium"
+          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to {event.name}
+          Back
         </Link>
 
-        {event.registrationUrl && (
-          <a
-            href={event.registrationUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
-          >
-            <ExternalLink className="w-4 h-4" />
-            Go to Event Registration
-          </a>
-        )}
-
-        {/* Session title & meta */}
-        <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-          <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-900 mb-2 sm:mb-3">
-            {session.type}
-          </span>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">{session.title}</h1>
-          <div className="flex flex-wrap gap-2 sm:gap-3 text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">
-            <span className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-600" />
-              {session.time} · {session.duration}
-            </span>
-          </div>
-          {session.description && (
-            <p className="text-sm text-gray-600 leading-relaxed mb-4">{session.description}</p>
-          )}
-
-          {/* Tags */}
-          {session.tags && session.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {session.tags.map((tag, index) => (
-                <Link
-                  key={index}
-                  to={`/events/${eventId}?tag=${encodeURIComponent(tag)}`}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-colors"
-                >
-                  <Tag className="w-3 h-3" />
-                  {tag}
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* Share Buttons */}
-          <div className="flex gap-2 pt-3 border-t border-gray-200">
-            <button
-              onClick={handleLinkedInShare}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0077b5] text-white rounded-lg text-sm font-medium hover:bg-[#006399] transition-colors"
-            >
-              <Linkedin className="w-4 h-4" />
-              Share on LinkedIn
-            </button>
-            <button
-              onClick={handleTwitterShare}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] text-white rounded-lg text-sm font-medium hover:bg-[#1a8cd8] transition-colors"
-            >
-              <Twitter className="w-4 h-4" />
-              Share on Twitter
-            </button>
-            <button
-              onClick={handleCopyLink}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-white text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-            >
-              <Share2 className="w-4 h-4" />
-              Copy Link
-            </button>
-          </div>
-        </section>
-
-        {/* Video */}
-        {session.videoUrl && (
-          <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-              <Video className="w-4 sm:w-5 h-4 sm:h-5" />
-              Recording
-            </h2>
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="aspect-video bg-soil/10">
-                <iframe
-                  title={session.title}
-                  src={session.videoUrl}
-                  className="w-full h-full"
-                  allowFullScreen
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                />
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Presentation / slides */}
-        {(session.presentationUrl || session.presentationTitle) && (
-          <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-              <FileText className="w-4 sm:w-5 h-4 sm:h-5" />
-              Presentation
-            </h2>
-            <a
-              href={session.presentationUrl || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all group"
-            >
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FileText className="w-5 h-5 text-gray-900" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600">
-                  {session.presentationTitle || 'View slides'}
-                </h3>
-                <p className="text-sm text-gray-600 mt-0.5">Open or download the presentation</p>
-              </div>
-              <ExternalLink className="w-5 h-5 text-gray-600 group-hover:text-blue-600 flex-shrink-0" />
-            </a>
-          </section>
-        )}
-
-        {/* Quiz */}
-        <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <HelpCircle className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
-            Quick quiz
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Check your understanding of the session. Select an answer for each question, then submit.</p>
-          {!quizSubmitted ? (
-            <>
-              <div className="space-y-5 mb-5">
-                {DEFAULT_QUIZ.map((q) => (
-                  <div key={q.id} className="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
-                    <p className="text-sm font-medium text-gray-900 mb-3">{q.id}. {q.question}</p>
-                    <div className="space-y-2">
-                      {q.options.map((opt, idx) => (
-                        <label key={idx} className="flex items-center gap-3 cursor-pointer group">
-                          <input
-                            type="radio"
-                            name={`quiz-${q.id}`}
-                            checked={quizAnswers[q.id] === idx}
-                            onChange={() => setQuizAnswers((prev) => ({ ...prev, [q.id]: idx }))}
-                            className="w-4 h-4 accent-growth"
-                          />
-                          <span className={`text-sm text-gray-600 group-hover:text-gray-900 ${quizAnswers[q.id] === idx ? 'text-gray-900 font-medium' : ''}`}>{opt}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setQuizSubmitted(true)}
-                className="px-5 py-3 bg-gray-900 text-white rounded-lg  transition-colors text-sm font-medium flex items-center gap-2 active:scale-95"
-              >
-                <Send className="w-4 h-4" />
-                Submit answers
-              </button>
-            </>
-          ) : (
-            <div className="space-y-4">
-              {DEFAULT_QUIZ.map((q) => {
-                const correct = quizAnswers[q.id] === q.correct;
-                return (
-                  <div key={q.id} className="flex items-start gap-4 p-4 rounded-xl bg-mist/50">
-                    {correct ? (
-                      <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    ) : (
-                      <span className="w-5 h-5 rounded-full border-2 border-autumn flex-shrink-0 mt-0.5" />
-                    )}
-                    <div>
-                      <p className="font-medium text-gray-900">{q.question}</p>
-                      <p className={`text-sm ${correct ? 'text-blue-600' : 'text-gray-600'}`}>
-                        Your answer: {q.options[quizAnswers[q.id] ?? 0]} {!correct && `· Correct: ${q.options[q.correct]}`}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              <p className="text-gray-600 text-sm pt-4">
-                Score: {DEFAULT_QUIZ.filter((q) => quizAnswers[q.id] === q.correct).length} / {DEFAULT_QUIZ.length}
+        {/* Title and speaker header */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-2">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
+              {session.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+              <p className="flex items-center gap-1.5 text-sm text-gray-500">
+                <Calendar className="w-4 h-4" />
+                {new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
+              <p className="flex items-center gap-1.5 text-sm text-gray-500">
+                <MapPin className="w-4 h-4" />
+                {event.location || 'TBD'}
               </p>
             </div>
-          )}
-        </section>
-
-        {/* Review */}
-        <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <Star className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
-            Rate this session
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Your feedback helps us and the speaker improve.</p>
-          {!reviewSubmitted ? (
-            <>
-              <div className="flex items-center gap-1 mb-6">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onMouseEnter={() => setReviewHover(star)}
-                    onMouseLeave={() => setReviewHover(0)}
-                    onClick={() => setReviewRating(star)}
-                    className="p-1 rounded focus:outline-none focus:ring-2 focus:ring-growth"
-                    aria-label={`${star} star${star > 1 ? 's' : ''}`}
-                  >
-                    <Star
-                      className={`w-8 h-8 transition-colors ${
-                        star <= (reviewHover || reviewRating) ? 'text-bloom fill-bloom' : 'text-mist'
-                      }`}
-                    />
-                  </button>
-                ))}
-                <span className="ml-2 text-sm text-gray-600">{reviewHover || reviewRating || 0}/5</span>
-              </div>
-              <textarea
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                placeholder="Optional: What did you find most useful? Any suggestions?"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-600 placeholder-stem/60 resize-none mt-2"
-                rows={3}
-              />
-              <button
-                type="button"
-                onClick={() => setReviewSubmitted(true)}
-                className="mt-4 sm:mt-5 px-5 py-3 bg-gray-900 text-white rounded-lg  transition-colors text-sm font-medium flex items-center gap-2 active:scale-95"
-              >
-                <Send className="w-4 h-4" />
-                Submit review
-              </button>
-            </>
-          ) : (
-            <div className="flex items-center gap-4 p-5 bg-gray-100/30 rounded-xl text-gray-900">
-              <CheckCircle className="w-8 h-8 text-blue-600 flex-shrink-0" />
-              <div>
-                <p className="font-medium">Thanks for your feedback!</p>
-                <p className="text-sm text-gray-600 mt-1">Your review has been submitted.</p>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Implementation task */}
-        <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <CheckSquare className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
-            Try it yourself
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Use this checklist to apply what you learned. Tick off each step as you go.</p>
-          {!taskSubmitted ? (
-            <>
-              <ul className="space-y-4 mb-6">
-                {DEFAULT_TASK_STEPS.map((step, idx) => (
-                  <li key={idx}>
-                    <label className="flex items-start gap-4 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={!!taskChecks[idx]}
-                        onChange={() => setTaskChecks((prev) => ({ ...prev, [idx]: !prev[idx] }))}
-                        className="w-5 h-5 mt-0.5 rounded accent-growth flex-shrink-0"
-                      />
-                      <span className={`text-gray-600 group-hover:text-gray-900 ${taskChecks[idx] ? 'line-through text-gray-600/70' : ''}`}>
-                        {step}
-                      </span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-              <textarea
-                value={taskNotes}
-                onChange={(e) => setTaskNotes(e.target.value)}
-                placeholder="Optional: Describe what you built or tried (e.g. agent goal, tools used, result)."
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-600 placeholder-stem/60 resize-none mb-5"
-                rows={3}
-              />
-              <button
-                type="button"
-                onClick={() => setTaskSubmitted(true)}
-                className="px-5 py-3 bg-gray-900 text-white rounded-lg  transition-colors text-sm font-medium flex items-center gap-2 active:scale-95"
-              >
-                <CheckCircle className="w-4 h-4" />
-                Mark complete
-              </button>
-            </>
-          ) : (
-            <div className="flex items-center gap-4 p-5 bg-gray-100/30 rounded-xl text-gray-900">
-              <CheckCircle className="w-8 h-8 text-blue-600 flex-shrink-0" />
-              <div>
-                <p className="font-medium">Task completed</p>
-                <p className="text-sm text-gray-600 mt-1">
-                  {Object.keys(taskChecks).filter((k) => taskChecks[k]).length} / {DEFAULT_TASK_STEPS.length} steps checked.
-                  {taskNotes && ' Your notes were saved.'}
-                </p>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Back to event & schedule */}
-        <section className="pt-8 border-t border-gray-200">
-          <Link
-            to={`/events/${eventId}#schedule`}
-            className="inline-flex items-center gap-2 text-blue-600 font-medium hover:underline"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            View all sessions
-          </Link>
-        </section>
+            {session.description && (
+              <p className="text-sm text-gray-600 mt-3 leading-relaxed">{session.description}</p>
+            )}
           </div>
-
-          {/* Speaker info – right sidebar */}
           {speaker && (
-            <aside className="space-y-4 sm:space-y-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-                  <Mic className="w-4 sm:w-5 h-4 sm:h-5 text-blue-600" />
-                  Speaker
-                </h2>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-11 h-11 bg-gray-900 rounded-lg flex items-center justify-center text-white font-bold text-base flex-shrink-0">
-                      {speaker.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-bold text-gray-900">{speaker.name}</h3>
-                      <p className="text-sm text-gray-600">{speaker.company}</p>
-                      <p className="text-sm text-blue-600 font-medium mt-1">{speaker.topic}</p>
-                    </div>
-                  </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg overflow-hidden ${
+                eventStage === 'before'
+                  ? 'bg-gray-300 ring-4 ring-gray-200 text-gray-500'
+                  : 'bg-gradient-to-br from-amber-700 to-amber-900 ring-4 ring-amber-200/60 text-white'
+              }`}>
+                {eventStage === 'before' ? (
+                  <span>{speaker.name.split(' ').map(n => n[0]).join('')}</span>
+                ) : speaker.photoUrl || speaker.avatar ? (
+                  <img src={speaker.photoUrl || speaker.avatar} alt={speaker.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{speaker.name.split(' ').map(n => n[0]).join('')}</span>
+                )}
+              </div>
+              <div>
+                <p className={`text-sm font-semibold ${eventStage === 'before' ? 'text-gray-500' : 'text-gray-900'}`}>{speaker.name}</p>
+                <p className="text-xs text-gray-500">{speaker.company}</p>
+              </div>
+            </div>
+          )}
+        </div>
 
-                  {/* Social links */}
-                  {(speaker.twitter || speaker.linkedin) && (
-                    <div className="flex items-center gap-3">
-                      {speaker.twitter && (
-                        <a
-                          href={`https://twitter.com/${speaker.twitter}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-gray-600 hover:text-blue-600"
-                        >
-                          @{speaker.twitter}
-                        </a>
-                      )}
-                      {speaker.linkedin && (
-                        <a
-                          href={speaker.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-gray-600 hover:text-blue-600"
-                        >
-                          LinkedIn
-                        </a>
-                      )}
+        {/* Main grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main content */}
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* Upload Content Section — moved up, always visible */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-bold text-gray-900">
+                  Upload content
+                </h2>
+                {uploadedSlides.length > 0 && (
+                  <span className="text-xs text-gray-500">{uploadedSlides.length} file{uploadedSlides.length !== 1 ? 's' : ''} uploaded</span>
+                )}
+              </div>
+              <div
+                onDragEnter={handleUploadDrag}
+                onDragLeave={handleUploadDrag}
+                onDragOver={handleUploadDrag}
+                onDrop={handleUploadDrop}
+                onClick={() => !isUploading && uploadRef.current?.click()}
+                className={`flex items-center justify-center gap-2 px-4 py-3 border border-dashed rounded-lg cursor-pointer transition-colors ${
+                  isUploading ? 'border-blue-400 bg-blue-50 cursor-wait' :
+                  dragActive ? 'border-gray-900 bg-gray-50' : 'border-gray-300 hover:border-gray-400 bg-white'
+                }`}
+              >
+                {isUploading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-xs font-medium text-blue-600">Uploading...</p>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 text-gray-400" />
+                    <p className="text-xs font-medium text-gray-700">
+                      Drop files or <span className="text-blue-600">browse</span>
+                    </p>
+                    <span className="text-[10px] text-gray-400 ml-1">Photos, videos, slides, files</span>
+                  </>
+                )}
+                <input
+                  ref={uploadRef}
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.mp4,.webm,.mov"
+                  onChange={(e) => { if (e.target.files?.[0]) handleSlideUpload(e.target.files[0]); }}
+                />
+              </div>
+
+              {/* Uploaded files list */}
+              {uploadedSlides.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {uploadedSlides.map((slide) => (
+                    <div key={slide.id} className="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        {slide.fileType?.startsWith('image/') ? (
+                          <Image className="w-4 h-4 text-green-600" />
+                        ) : slide.fileType?.startsWith('video/') ? (
+                          <Video className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <FileText className="w-4 h-4 text-green-600" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{slide.fileName}</p>
+                        <p className="text-xs text-gray-500">{(slide.fileSize / 1024 / 1024).toFixed(2)} MB &middot; {new Date(slide.uploadedAt).toLocaleDateString()}</p>
+                      </div>
+                      <a
+                        href={slide.dataUrl}
+                        download={slide.fileName}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                        title="Download"
+                      >
+                        <Download className="w-4 h-4" />
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSlide(slide.id)}
+                        className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+
+            {/* Livestream/Zoom — During only */}
+            {eventStage === 'during' && (
+              <section>
+                <h2 className="text-lg font-bold text-gray-900 mb-3">Join Live</h2>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => window.open(session.livestreamUrl || '#', '_blank')}
+                    className="w-full flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Video className="w-4 h-4 text-red-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-900">Livestream</p>
+                      <p className="text-xs text-gray-500">Watch the live broadcast</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-gray-400 ml-auto" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.open(session.zoomUrl || '#', '_blank')}
+                    className="w-full flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Video className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-900">Zoom</p>
+                      <p className="text-xs text-gray-500">Join the video call</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-gray-400 ml-auto" />
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* Resources Carousel — After only */}
+            {eventStage === 'after' && resources.length > 0 && (
+              <section>
+                {resources.length > 1 && (
+                  <div className="flex items-center justify-end gap-2 mb-4">
+                    <span className="text-xs text-gray-500">{resourceIndex + 1} / {resources.length}</span>
+                      <button
+                        type="button"
+                        onClick={() => setResourceIndex(Math.max(0, resourceIndex - 1))}
+                        disabled={resourceIndex === 0}
+                        className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setResourceIndex(Math.min(resources.length - 1, resourceIndex + 1))}
+                        disabled={resourceIndex === resources.length - 1}
+                        className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
 
-                  {/* Message speaker button */}
-                  <button className="w-full bg-gray-100 text-gray-900 py-3 px-3 rounded-lg text-sm font-medium  hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95">
-                    <MessageCircle className="w-4 h-4" />
-                    Message Speaker
+                {resources[resourceIndex]?.type === 'video' ? (
+                  <div className="rounded-lg overflow-hidden border border-gray-200">
+                    <div className="aspect-video">
+                      <iframe
+                        src={resources[resourceIndex].url}
+                        title={resources[resourceIndex].title}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="px-4 py-3 bg-gray-50 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <PlayCircle className="w-4 h-4 text-red-600" />
+                        <span className="text-sm font-medium text-gray-900">{resources[resourceIndex].title}</span>
+                      </div>
+                      <a
+                        href={resources[resourceIndex].url.replace('/embed/', '/watch?v=')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        Open in YouTube
+                      </a>
+                    </div>
+                  </div>
+                ) : resources[resourceIndex]?.type === 'uploaded' ? (
+                  <div className="border border-gray-200 rounded-lg p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        {resources[resourceIndex].fileType?.startsWith('image/') ? (
+                          <Image className="w-6 h-6 text-green-600" />
+                        ) : (
+                          <FileText className="w-6 h-6 text-green-600" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-gray-900">{resources[resourceIndex].title}</h4>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Uploaded by {resources[resourceIndex].uploadedBy} &middot; {(resources[resourceIndex].fileSize / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                        {resources[resourceIndex].fileType?.startsWith('image/') ? (
+                          <img src={resources[resourceIndex].dataUrl} alt={resources[resourceIndex].title} className="mt-3 rounded-lg max-h-80 object-contain" />
+                        ) : (
+                          <a
+                            href={resources[resourceIndex].dataUrl}
+                            download={resources[resourceIndex].fileName}
+                            className="text-sm text-blue-600 hover:underline flex items-center gap-1 mt-1"
+                          >
+                            <Download className="w-3 h-3" />
+                            Download {resources[resourceIndex].fileName}
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="px-2.5 py-1 rounded text-[10px] font-bold bg-green-100 text-green-700">
+                          {resources[resourceIndex].fileName?.split('.').pop()?.toUpperCase() || 'FILE'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSlide(resources[resourceIndex].id)}
+                          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          title="Remove"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border border-gray-200 rounded-lg p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-gray-900">{resources[resourceIndex]?.title}</h4>
+                        <a
+                          href={resources[resourceIndex]?.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline flex items-center gap-1 mt-1"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          View slides
+                        </a>
+                      </div>
+                      <span className="px-2.5 py-1 rounded text-[10px] font-bold bg-blue-100 text-blue-700 flex-shrink-0">
+                        PDF
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Resource dots */}
+                {resources.length > 1 && (
+                  <div className="flex justify-center gap-1.5 mt-3">
+                    {resources.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setResourceIndex(i)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          i === resourceIndex ? 'bg-gray-900' : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Comments - LinkedIn-style composer — During and After only */}
+            {eventStage !== 'before' && <section>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Comments</h2>
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="flex items-start gap-3 p-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                    SI
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">Swati Iyer</p>
+                    <p className="text-xs text-gray-500">Post to Anyone</p>
+                  </div>
+                </div>
+                <div className="px-4">
+                  <textarea
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    placeholder="What do you say?"
+                    className="w-full text-sm text-gray-900 placeholder-gray-400 focus:outline-none resize-none min-h-[120px]"
+                    rows={5}
+                  />
+                  {postImage && (
+                    <div className="relative mb-3">
+                      <img src={URL.createObjectURL(postImage)} alt="Attached" className="max-h-48 rounded-lg object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => { setPostImage(null); if (postImageRef.current) postImageRef.current.value = ''; }}
+                        className="absolute top-2 right-2 w-6 h-6 bg-gray-900/70 text-white rounded-full flex items-center justify-center"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <button type="button" className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Smile className="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => postImageRef.current?.click()}
+                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Image className="w-5 h-5" />
+                    </button>
+                    <button type="button" className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Plus className="w-5 h-5" />
+                    </button>
+                    <input
+                      ref={postImageRef}
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => { if (e.target.files?.[0]) setPostImage(e.target.files[0]); }}
+                    />
+                    <span className="text-xs text-gray-400 ml-2">{postText.length}/3000</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handlePublishPost}
+                    disabled={!postText.trim() && !postImage}
+                    className="px-5 py-2 bg-gray-900 text-white text-sm font-semibold rounded-full hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Post
                   </button>
                 </div>
               </div>
-            </aside>
-          )}
+
+              {/* Published posts */}
+              {posts.length > 0 && (
+                <div className="mt-4 space-y-4">
+                  {posts.map((post) => (
+                    <div key={post.id} className="border border-gray-200 rounded-xl p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                          SI
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{post.author}</p>
+                          <p className="text-xs text-gray-500">{post.date}</p>
+                        </div>
+                      </div>
+                      {post.text && <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{post.text}</p>}
+                      {post.image && <img src={post.image} alt="Post" className="mt-3 rounded-lg max-h-64 object-cover" />}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>}
+
+            {/* Back to sessions */}
+            <div className="pt-2">
+              <Link
+                to={`/events/${eventId}`}
+                className="inline-flex items-center gap-2 text-sm text-blue-600 font-medium hover:underline"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                View all sessions
+              </Link>
+            </div>
+          </div>
+
+          {/* Right sidebar */}
+          <aside className="space-y-4">
+            {/* Follow button */}
+            <button
+              type="button"
+              onClick={() => setIsFollowing(!isFollowing)}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+                isFollowing
+                  ? 'border border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              }`}
+            >
+              <UserPlus className="w-4 h-4" />
+              {isFollowing ? 'Following' : 'Follow this Session'}
+            </button>
+
+
+            {/* Collaborators */}
+            {speaker && (
+              <div className="border border-gray-200 rounded-lg p-5">
+                <h3 className="text-sm font-bold text-gray-900 mb-3">Collaborators</h3>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center text-white font-bold text-xs ring-2 ring-amber-200/60 overflow-hidden">
+                    {speaker.photoUrl || speaker.avatar ? (
+                      <img src={speaker.photoUrl || speaker.avatar} alt={speaker.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{speaker.name.split(' ').map(n => n[0]).join('')}</span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-900">{speaker.name}</p>
+                    <p className="text-[10px] text-gray-500">{speaker.company}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Share */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleCopyLink}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Copy Link
+              </button>
+              <button
+                onClick={handleXShare}
+                className="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                <XLogo className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={handleLinkedInShare}
+                className="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                <Linkedin className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </aside>
         </div>
       </main>
 
-      {/* Share Toast */}
-      {showShareToast && (
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-grow-in">
-          <div className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <p className="text-sm font-medium">Link copied to clipboard!</p>
+      {/* Toast */}
+      {showToast && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <CheckCircle className="w-5 h-5" />
+            <p className="text-sm font-medium">{toastMessage}</p>
           </div>
         </div>
       )}

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Building2, Mail, Globe, Users, FileText, Image, ArrowLeft, Check } from 'lucide-react';
-import Header from '../components/Header';
 
 export default function CertifiedOrganizerPage() {
   const [formData, setFormData] = useState({
@@ -57,7 +56,6 @@ export default function CertifiedOrganizerPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}

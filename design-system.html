@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Digo — Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset ──────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:13px;
+  line-height:1.5;
+  color:#111827;
+  background:#f9fafb;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── Page ───────────────────────────────── */
+.page{
+  max-width:1400px;
+  margin:0 auto;
+  padding:52px 48px 96px;
+}
+
+/* ── Masthead ───────────────────────────── */
+.masthead{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:end;
+  border-bottom:1.5px solid #111827;
+  padding-bottom:14px;
+  margin-bottom:48px;
+}
+
+.masthead-title{
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:#111827;
+}
+
+.masthead-brand{
+  font-size:28px;
+  font-weight:700;
+  letter-spacing:-0.04em;
+  color:#111827;
+  line-height:1;
+  margin-top:2px;
+}
+
+.masthead-meta{
+  text-align:right;
+}
+
+.masthead-meta p{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color:#9ca3af;
+  line-height:1.8;
+}
+
+/* ── Column grid ────────────────────────── */
+.cols{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0 56px;
+  align-items:start;
+}
+
+.col{ min-width:0; }
+
+/* ── Block ──────────────────────────────── */
+.block{ margin-bottom:44px; }
+
+/* ── Section heading ────────────────────── */
+.sh{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  padding-bottom:7px;
+  margin-bottom:18px;
+  border-bottom:1px solid #e5e7eb;
+  position:relative;
+}
+
+/* left accent bar */
+.sh::before{
+  content:'';
+  position:absolute;
+  left:-12px;
+  top:2px;
+  bottom:2px;
+  width:3px;
+  background:#111827;
+  border-radius:2px;
+}
+
+.sh-title{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:#111827;
+}
+
+.sh-meta{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  color:#9ca3af;
+  letter-spacing:0.02em;
+}
+
+/* ── Type ramp ──────────────────────────── */
+.type-pair{
+  display:grid;
+  grid-template-columns:100px 1fr;
+  gap:0 16px;
+  align-items:baseline;
+  margin-bottom:6px;
+  border-bottom:1px solid #f3f4f6;
+  padding-bottom:6px;
+}
+.type-pair:last-child{ border-bottom:none; }
+
+.type-token{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  color:#9ca3af;
+  white-space:nowrap;
+  padding-top:3px;
+}
+
+/* ── Color swatches ─────────────────────── */
+.cg{
+  display:grid;
+  grid-template-columns:repeat(9,1fr);
+  gap:4px;
+  margin-bottom:12px;
+}
+
+.sw{
+  aspect-ratio:1;
+  border-radius:4px;
+  border:1px solid rgba(0,0,0,0.05);
+}
+
+.sw-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:8px;
+  color:#9ca3af;
+  margin-top:2px;
+  text-align:center;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.swatch-section{
+  margin-bottom:14px;
+}
+
+.swatch-section-label{
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#6b7280;
+  margin-bottom:6px;
+}
+
+/* ── Buttons ────────────────────────────── */
+.btn-row{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.01em;
+  border:none;
+  cursor:pointer;
+  border-radius:10px;
+  padding:6px 14px;
+  white-space:nowrap;
+  line-height:1;
+  transition:all 150ms ease;
+}
+
+/* Actual patterns from the app */
+.btn-primary{
+  background:#111827;
+  color:#fff;
+}
+
+.btn-secondary{
+  background:#fff;
+  color:#111827;
+  border:1px solid #d1d5db;
+}
+
+.btn-ghost{
+  background:rgba(255,255,255,0.1);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+.btn-pill{
+  background:#fff;
+  color:#111827;
+  border:1px solid #d1d5db;
+  border-radius:9999px;
+  padding:5px 14px;
+}
+
+.btn-filter-active{
+  background:#111827;
+  color:#fff;
+  border-radius:6px;
+}
+
+.btn-filter-inactive{
+  background:#fff;
+  color:#374151;
+  border:1px solid #e5e7eb;
+  border-radius:6px;
+}
+
+.btn-sm{
+  padding:4px 10px;
+  font-size:10px;
+}
+
+.btn-fab{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  border:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  line-height:1;
+}
+
+.fab-dark{ background:#111827; color:#fff; }
+.fab-blue{ background:#3b82f6; color:#fff; }
+.fab-emerald{ background:#10b981; color:#fff; }
+.fab-outline{ background:#fff; color:#374151; border:1px solid #d1d5db; }
+
+/* ── Spacing ────────────────────────────── */
+.space-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:6px;
+}
+
+.space-bar{
+  height:12px;
+  background:#111827;
+  border-radius:2px;
+}
+
+.space-meta{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  color:#6b7280;
+}
+
+/* ── Icon grid ──────────────────────────── */
+.icon-grid{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:5px;
+}
+
+.icon-cell{
+  height:28px;
+  border-radius:6px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:8px;
+  color:#9ca3af;
+}
+
+/* ── Cards ──────────────────────────────── */
+.card-demo{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:10px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+
+.card-demo:last-child{ margin-bottom:0; }
+
+.card-img{
+  width:100%;
+  height:100px;
+  object-fit:cover;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  padding:8px 10px;
+}
+
+.card-img-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.2);
+}
+
+.card-body{ padding:12px 14px; }
+
+.card-meta{
+  font-size:9px;
+  color:#9ca3af;
+  margin-bottom:4px;
+  letter-spacing:0.02em;
+}
+
+.card-title{
+  font-size:13px;
+  font-weight:600;
+  color:#111827;
+  line-height:1.3;
+}
+
+.card-footer{
+  padding:8px 14px;
+  border-top:1px solid #f3f4f6;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+/* Stat card */
+.stat-card{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:14px 16px;
+  margin-bottom:8px;
+}
+
+.stat-card:last-child{ margin-bottom:0; }
+
+.stat-label{
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  color:#9ca3af;
+  margin-bottom:3px;
+}
+
+.stat-val{
+  font-size:26px;
+  font-weight:700;
+  color:#111827;
+  letter-spacing:-0.04em;
+  line-height:1;
+}
+
+.stat-trend{
+  font-size:9px;
+  color:#10b981;
+  margin-top:3px;
+}
+
+.stat-trend-neutral{
+  font-size:9px;
+  color:#6b7280;
+  margin-top:3px;
+}
+
+/* Dark promo card */
+.dark-card{
+  background:linear-gradient(135deg,#111827,#1f2937 60%,#111827);
+  border-radius:20px;
+  padding:18px 20px;
+  margin-bottom:10px;
+  position:relative;
+  overflow:hidden;
+}
+
+.dark-card-noise{
+  position:absolute;
+  inset:0;
+  opacity:0.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+}
+
+.dark-card-title{
+  font-size:14px;
+  font-weight:700;
+  color:#fff;
+  line-height:1.3;
+  position:relative;
+}
+
+.dark-card-sub{
+  font-size:10px;
+  color:rgba(255,255,255,0.45);
+  margin-top:4px;
+  position:relative;
+}
+
+.dark-card-actions{
+  display:flex;
+  gap:6px;
+  margin-top:14px;
+  position:relative;
+}
+
+/* ── Badges / Chips ─────────────────────── */
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:2px 8px;
+  border-radius:6px;
+  font-size:9px;
+  font-weight:600;
+  letter-spacing:0.02em;
+}
+
+.chip-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-bottom:8px;
+}
+
+/* Actual badge patterns from the app */
+.chip-type-online{
+  background:rgba(59,130,246,0.9);
+  color:#fff;
+}
+
+.chip-type-inperson{
+  background:rgba(255,255,255,0.9);
+  color:#111827;
+  border:1px solid rgba(0,0,0,0.08);
+}
+
+.chip-dark{
+  background:rgba(0,0,0,0.7);
+  color:#fff;
+}
+
+.chip-featured{
+  background:#eab308;
+  color:#000;
+  font-size:8px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  border-radius:4px;
+}
+
+.chip-joined{
+  background:#ecfdf5;
+  color:#059669;
+  border-radius:6px;
+}
+
+.chip-disabled{
+  background:#f3f4f6;
+  color:#9ca3af;
+  border-radius:4px;
+  font-size:8px;
+}
+
+.chip-default{
+  background:#f3f4f6;
+  color:#374151;
+}
+
+.chip-blue{
+  background:#eff6ff;
+  color:#2563eb;
+}
+
+.chip-emerald{
+  background:#ecfdf5;
+  color:#059669;
+}
+
+/* ── Text Fields ────────────────────────── */
+.tf-group{ margin-bottom:12px; }
+.tf-group:last-child{ margin-bottom:0; }
+
+.tf-label{
+  font-size:9px;
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:#6b7280;
+  display:block;
+  margin-bottom:4px;
+}
+
+.tf{
+  width:100%;
+  padding:8px 12px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:12px;
+  color:#111827;
+  background:#fff;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  outline:none;
+  transition:border-color 150ms;
+}
+
+.tf:focus{ border-color:#111827; }
+
+.tf-active{
+  border-color:#111827;
+}
+
+.tf-search{
+  width:100%;
+  padding:8px 12px 8px 32px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:12px;
+  color:#111827;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:9999px;
+  outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='22' y2='22'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:12px center;
+}
+
+.tf-filter{
+  width:100%;
+  padding:6px 10px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:11px;
+  font-weight:500;
+  color:#374151;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:6px;
+  outline:none;
+}
+
+.tf-textarea{
+  width:100%;
+  padding:8px 12px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:12px;
+  color:#111827;
+  background:#fff;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  outline:none;
+  resize:vertical;
+  min-height:64px;
+}
+
+/* ── Navigation ─────────────────────────── */
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+  margin-bottom:2px;
+}
+
+.nav-item-active{
+  background:#f3f4f6;
+  color:#111827;
+  font-weight:600;
+}
+
+.nav-item-inactive{
+  color:#6b7280;
+}
+
+.nav-icon{
+  width:20px;
+  height:20px;
+  border-radius:4px;
+  background:#e5e7eb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:8px;
+  font-weight:700;
+  color:#6b7280;
+  flex-shrink:0;
+}
+
+.nav-icon-active{
+  background:#111827;
+  color:#fff;
+}
+
+.nav-section-label{
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  color:#9ca3af;
+  padding:8px 10px 4px;
+}
+
+/* ── Role switcher ──────────────────────── */
+.role-switcher{
+  display:flex;
+  gap:4px;
+  background:#f3f4f6;
+  border-radius:10px;
+  padding:3px;
+  margin-bottom:14px;
+}
+
+.role-btn{
+  flex:1;
+  padding:5px 8px;
+  font-size:10px;
+  font-weight:600;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  text-align:center;
+}
+
+.role-active{
+  background:#111827;
+  color:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+
+.role-inactive{
+  background:transparent;
+  color:#6b7280;
+}
+
+/* ── App Shell diagram ──────────────────── */
+.shell{
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 4px 16px rgba(0,0,0,0.06);
+  background:#f9fafb;
+}
+
+.shell-header{
+  background:#fff;
+  border-bottom:1px solid #e5e7eb;
+  height:40px;
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  gap:12px;
+}
+
+.shell-logo{
+  font-weight:800;
+  font-size:14px;
+  letter-spacing:-0.04em;
+  color:#111827;
+}
+
+.shell-header-nav{
+  display:flex;
+  gap:14px;
+  margin-left:auto;
+}
+
+.shell-header-nav span{
+  font-size:10px;
+  color:#9ca3af;
+  cursor:pointer;
+}
+
+.shell-header-nav span.active{
+  color:#111827;
+  font-weight:600;
+}
+
+.shell-body{
+  display:grid;
+  grid-template-columns:180px 1fr;
+  height:200px;
+}
+
+.shell-sidebar{
+  background:#fff;
+  border-right:1px solid #e5e7eb;
+  padding:10px 8px;
+  overflow:hidden;
+}
+
+.shell-content{
+  padding:14px;
+  overflow:hidden;
+}
+
+.shell-content-header{
+  font-size:12px;
+  font-weight:700;
+  color:#111827;
+  margin-bottom:10px;
+}
+
+.shell-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+
+.shell-card{
+  height:44px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* ── Progress ───────────────────────────── */
+.prog-wrap{
+  background:#e5e7eb;
+  border-radius:9999px;
+  height:5px;
+  overflow:hidden;
+  margin-top:4px;
+}
+
+.prog-bar{
+  height:100%;
+  border-radius:9999px;
+}
+
+/* ── Radius demo ────────────────────────── */
+.radius-row{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+}
+
+.radius-block{
+  text-align:center;
+}
+
+.radius-box{
+  width:44px;
+  height:44px;
+  background:#111827;
+  margin:0 auto 4px;
+}
+
+/* ── Shadow demo ────────────────────────── */
+.shadow-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.shadow-box{
+  width:48px;
+  height:48px;
+  background:#fff;
+  border-radius:8px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+}
+
+/* ── Motion ─────────────────────────────── */
+.motion-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+
+.motion-cell{
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:8px 10px;
+  background:#fff;
+}
+
+.motion-name{
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:#6b7280;
+  margin-bottom:2px;
+}
+
+.motion-val{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color:#111827;
+}
+
+.motion-desc{
+  font-size:9px;
+  color:#9ca3af;
+  margin-top:2px;
+}
+
+/* ── Avatar ─────────────────────────────── */
+.av{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  font-weight:700;
+  color:#fff;
+  background:#374151;
+  flex-shrink:0;
+}
+
+/* ── Divider ────────────────────────────── */
+.divider{
+  height:1px;
+  background:#e5e7eb;
+  margin:10px 0;
+}
+
+/* ── Table ──────────────────────────────── */
+.table-wrap{
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  font-size:11px;
+}
+
+th{
+  padding:6px 10px;
+  text-align:left;
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:#9ca3af;
+  background:#f9fafb;
+  border-bottom:1px solid #e5e7eb;
+}
+
+td{
+  padding:8px 10px;
+  color:#374151;
+  border-bottom:1px solid #f3f4f6;
+}
+
+tr:last-child td{ border-bottom:none; }
+tr:hover td{ background:#f9fafb; }
+
+/* ── Dropdown menu ──────────────────────── */
+.dropdown{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.08);
+  overflow:hidden;
+  width:180px;
+}
+
+.dd-item{
+  padding:8px 14px;
+  font-size:11px;
+  color:#374151;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border-bottom:1px solid #f3f4f6;
+}
+
+.dd-item:last-child{ border-bottom:none; }
+
+.dd-icon{
+  width:16px;
+  height:16px;
+  border-radius:4px;
+  background:#f3f4f6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:7px;
+  color:#9ca3af;
+  flex-shrink:0;
+}
+
+/* ── Alert ──────────────────────────────── */
+.alert{
+  padding:10px 14px;
+  border-radius:10px;
+  border-left:3px solid;
+  font-size:11px;
+  margin-bottom:6px;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+}
+
+.alert-title{ font-weight:600; }
+.alert-body{ opacity:0.8; }
+
+.alert-info{ background:#eff6ff; border-color:#3b82f6; color:#1d4ed8; }
+.alert-success{ background:#ecfdf5; border-color:#10b981; color:#065f46; }
+.alert-warning{ background:#fffbeb; border-color:#f59e0b; color:#92400e; }
+.alert-danger{ background:#fef2f2; border-color:#ef4444; color:#991b1b; }
+
+/* ── Tooltip ────────────────────────────── */
+.tooltip-wrap{ position:relative; display:inline-block; }
+
+.tooltip{
+  position:absolute;
+  bottom:calc(100% + 6px);
+  left:50%;
+  transform:translateX(-50%);
+  background:#111827;
+  color:#fff;
+  font-size:10px;
+  padding:4px 8px;
+  border-radius:6px;
+  white-space:nowrap;
+  pointer-events:none;
+}
+
+.tooltip::after{
+  content:'';
+  position:absolute;
+  top:100%;
+  left:50%;
+  transform:translateX(-50%);
+  border:4px solid transparent;
+  border-top-color:#111827;
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Masthead -->
+  <div class="masthead">
+    <div>
+      <div class="masthead-title">Design System</div>
+      <div class="masthead-brand">Digo</div>
+    </div>
+    <div class="masthead-meta">
+      <p>IBM Plex Sans &nbsp;·&nbsp; Tailwind CSS &nbsp;·&nbsp; React 18</p>
+      <p>Lucide React &nbsp;·&nbsp; Vite &nbsp;·&nbsp; v1.0 &nbsp;·&nbsp; 2026</p>
+    </div>
+  </div>
+
+  <div class="cols">
+
+    <!-- ═══ COLUMN 1: Type · Buttons · Spacing · Icons ═══ -->
+    <div class="col">
+
+      <!-- Typography -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Typography</span>
+          <span class="sh-meta">IBM Plex Sans &nbsp;300–700</span>
+        </div>
+
+        <div class="type-pair">
+          <div class="type-token">text-4xl / 700</div>
+          <div style="font-size:36px;font-weight:700;letter-spacing:-0.04em;line-height:1">Digo</div>
+        </div>
+        <div class="type-pair">
+          <div class="type-token">text-3xl / 700</div>
+          <div style="font-size:30px;font-weight:700;letter-spacing:-0.03em;line-height:1.1">AI Summit 2026</div>
+        </div>
+        <div class="type-pair">
+          <div class="type-token">text-2xl / 600</div>
+          <div style="font-size:24px;font-weight:600;letter-spacing:-0.02em">Discover Events</div>
+        </div>
+        <div class="type-pair">
+          <div class="type-token">text-xl / 600</div>
+          <div style="font-size:20px;font-weight:600">Event Sessions</div>
+        </div>
+        <div class="type-pair">
+          <div class="type-token">text-lg / 500</div>
+          <div style="font-size:18px;font-weight:500">Speakers & Sponsors</div>
+        </div>
+        <div class="type-pair">
+          <div class="type-token">text-base / 400</div>
+          <div style="font-size:15px;color:#374151;line-height:1.5">Body text for cards, descriptions, and general UI copy across the platform.</div>
+        </div>
+        <div class="type-pair">
+          <div class="type-token">text-sm / 400</div>
+          <div style="font-size:13px;color:#6b7280">Supporting text, metadata, table rows, and form hints.</div>
+        </div>
+        <div class="type-pair">
+          <div class="type-token">text-xs / 600 upper</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af">Section Label &nbsp;·&nbsp; Overline</div>
+        </div>
+        <div class="type-pair">
+          <div class="type-token">IBM Plex Mono</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#374151">token-name &nbsp;·&nbsp; #111827 &nbsp;·&nbsp; 16px</div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Buttons</span>
+          <span class="sh-meta">4 patterns from app</span>
+        </div>
+
+        <!-- Row 1: Core variants -->
+        <div class="btn-row">
+          <button class="btn btn-primary">Create Event</button>
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-pill">+ New</button>
+        </div>
+        <!-- Row 2: On dark backgrounds -->
+        <div class="btn-row" style="background:#111827;padding:8px;border-radius:10px">
+          <button class="btn btn-primary" style="background:#fff;color:#111827">Get Started</button>
+          <button class="btn btn-ghost">Learn More</button>
+        </div>
+        <!-- Row 3: Filter buttons (used in Discover) -->
+        <div class="btn-row">
+          <button class="btn btn-filter-active btn-sm">All Events</button>
+          <button class="btn btn-filter-inactive btn-sm">Online</button>
+          <button class="btn btn-filter-inactive btn-sm">In Person</button>
+          <button class="btn btn-filter-inactive btn-sm">Free</button>
+        </div>
+        <!-- Row 4: FABs -->
+        <div class="btn-row" style="align-items:center">
+          <button class="btn-fab fab-dark" title="Primary action">+</button>
+          <button class="btn-fab fab-blue" title="Info action">+</button>
+          <button class="btn-fab fab-emerald" title="Success action">+</button>
+          <button class="btn-fab fab-outline" title="Secondary action">+</button>
+          <button class="btn-fab" style="width:38px;height:38px;background:#111827;color:#fff;border:none;font-size:17px;font-weight:700;border-radius:50%">+</button>
+        </div>
+      </div>
+
+      <!-- Spacing -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Spacing</span>
+          <span class="sh-meta">8px base unit</span>
+        </div>
+        <div class="space-row"><div class="space-bar" style="width:4px"></div><span class="space-meta">xs &nbsp;·&nbsp; 4px &nbsp;&mdash;&nbsp; micro gaps, icons</span></div>
+        <div class="space-row"><div class="space-bar" style="width:8px"></div><span class="space-meta">sm &nbsp;·&nbsp; 8px &nbsp;&mdash;&nbsp; tight component gaps</span></div>
+        <div class="space-row"><div class="space-bar" style="width:16px"></div><span class="space-meta">md &nbsp;·&nbsp; 16px &nbsp;&mdash;&nbsp; card padding, form rows</span></div>
+        <div class="space-row"><div class="space-bar" style="width:24px"></div><span class="space-meta">lg &nbsp;·&nbsp; 24px &nbsp;&mdash;&nbsp; section padding</span></div>
+        <div class="space-row"><div class="space-bar" style="width:32px"></div><span class="space-meta">xl &nbsp;·&nbsp; 32px &nbsp;&mdash;&nbsp; page margins</span></div>
+        <div class="space-row"><div class="space-bar" style="width:48px"></div><span class="space-meta">2xl &nbsp;·&nbsp; 48px &nbsp;&mdash;&nbsp; section breaks</span></div>
+        <div class="space-row"><div class="space-bar" style="width:64px"></div><span class="space-meta">3xl &nbsp;·&nbsp; 64px &nbsp;&mdash;&nbsp; hero rhythm</span></div>
+      </div>
+
+      <!-- Border Radius + Shadows -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Radius &amp; Elevation</span>
+          <span class="sh-meta">Used in app components</span>
+        </div>
+        <div class="radius-row" style="margin-bottom:16px">
+          <div class="radius-block">
+            <div class="radius-box" style="border-radius:6px"></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9ca3af">rounded</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#d1d5db">6–8px</div>
+          </div>
+          <div class="radius-block">
+            <div class="radius-box" style="border-radius:10px"></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9ca3af">rounded-xl</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#d1d5db">10–12px</div>
+          </div>
+          <div class="radius-block">
+            <div class="radius-box" style="border-radius:16px"></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9ca3af">rounded-2xl</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#d1d5db">16–20px</div>
+          </div>
+          <div class="radius-block">
+            <div class="radius-box" style="border-radius:9999px"></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#9ca3af">rounded-full</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#d1d5db">9999px</div>
+          </div>
+        </div>
+        <div class="shadow-row">
+          <div class="shadow-box" style="box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb">
+            <div style="font-size:8px;color:#9ca3af;font-family:'IBM Plex Mono',monospace">sm</div>
+          </div>
+          <div class="shadow-box" style="box-shadow:0 4px 12px rgba(0,0,0,0.06)">
+            <div style="font-size:8px;color:#9ca3af;font-family:'IBM Plex Mono',monospace">md</div>
+          </div>
+          <div class="shadow-box" style="box-shadow:0 8px 24px rgba(0,0,0,0.08)">
+            <div style="font-size:8px;color:#9ca3af;font-family:'IBM Plex Mono',monospace">lg</div>
+          </div>
+          <div class="shadow-box" style="box-shadow:0 16px 40px rgba(0,0,0,0.14)">
+            <div style="font-size:8px;color:#9ca3af;font-family:'IBM Plex Mono',monospace">2xl</div>
+          </div>
+          <div class="shadow-box" style="background:#111827">
+            <div style="font-size:8px;color:#6b7280;font-family:'IBM Plex Mono',monospace">dark</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Icons -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Iconography</span>
+          <span class="sh-meta">Lucide React &nbsp;·&nbsp; 16–20px</span>
+        </div>
+        <div class="icon-grid">
+          <div class="icon-cell">Cal</div>
+          <div class="icon-cell">Map</div>
+          <div class="icon-cell">Grp</div>
+          <div class="icon-cell">Msg</div>
+          <div class="icon-cell">Str</div>
+          <div class="icon-cell">Bell</div>
+          <div class="icon-cell">Cfg</div>
+          <div class="icon-cell">Src</div>
+          <div class="icon-cell">Bld</div>
+          <div class="icon-cell">Usr</div>
+          <div class="icon-cell">Lnk</div>
+          <div class="icon-cell">Tag</div>
+          <div class="icon-cell">Exp</div>
+          <div class="icon-cell">Mic</div>
+          <div class="icon-cell">Chk</div>
+          <div class="icon-cell">Pls</div>
+        </div>
+      </div>
+
+      <!-- Motion -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Motion</span>
+          <span class="sh-meta">4 timings &nbsp;·&nbsp; 2 keyframes</span>
+        </div>
+        <div class="motion-grid">
+          <div class="motion-cell">
+            <div class="motion-name">Micro</div>
+            <div class="motion-val">150ms ease-out</div>
+            <div class="motion-desc">Hover, icon swap</div>
+          </div>
+          <div class="motion-cell">
+            <div class="motion-name">Standard</div>
+            <div class="motion-val">250ms ease-in-out</div>
+            <div class="motion-desc">Buttons, nav items</div>
+          </div>
+          <div class="motion-cell">
+            <div class="motion-name">Complex</div>
+            <div class="motion-val">400ms spring</div>
+            <div class="motion-desc">Panel enter (grow-in)</div>
+          </div>
+          <div class="motion-cell">
+            <div class="motion-name">Growth</div>
+            <div class="motion-val">600ms spring</div>
+            <div class="motion-desc">Page transition, bloom</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /col1 -->
+
+    <!-- ═══ COLUMN 2: Colors · Cards · Nav · Tables ═══ -->
+    <div class="col">
+
+      <!-- Colors -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Colors</span>
+          <span class="sh-meta">Tailwind gray scale + tokens</span>
+        </div>
+
+        <!-- Gray scale (primary UI palette) -->
+        <div class="swatch-section">
+          <div class="swatch-section-label">Gray Scale &mdash; primary UI palette</div>
+          <div class="cg">
+            <div><div class="sw" style="background:#f9fafb;border:1px solid #e5e7eb"></div><div class="sw-label">50</div></div>
+            <div><div class="sw" style="background:#f3f4f6"></div><div class="sw-label">100</div></div>
+            <div><div class="sw" style="background:#e5e7eb"></div><div class="sw-label">200</div></div>
+            <div><div class="sw" style="background:#d1d5db"></div><div class="sw-label">300</div></div>
+            <div><div class="sw" style="background:#9ca3af"></div><div class="sw-label">400</div></div>
+            <div><div class="sw" style="background:#6b7280"></div><div class="sw-label">500</div></div>
+            <div><div class="sw" style="background:#4b5563"></div><div class="sw-label">600</div></div>
+            <div><div class="sw" style="background:#374151"></div><div class="sw-label">700</div></div>
+            <div><div class="sw" style="background:#1f2937"></div><div class="sw-label">800</div></div>
+          </div>
+          <div class="cg" style="grid-template-columns:repeat(3,1fr)">
+            <div><div class="sw" style="background:#111827;aspect-ratio:3/1;border-radius:4px"></div><div class="sw-label">gray-900 &nbsp;·&nbsp; forest (primary)</div></div>
+            <div><div class="sw" style="background:#f3f4f6;aspect-ratio:3/1;border-radius:4px;border:1px solid #e5e7eb"></div><div class="sw-label">gray-100 &nbsp;·&nbsp; spring (bg active nav)</div></div>
+            <div><div class="sw" style="background:#f9fafb;aspect-ratio:3/1;border-radius:4px;border:1px solid #e5e7eb"></div><div class="sw-label">gray-50 &nbsp;·&nbsp; dew (page bg)</div></div>
+          </div>
+        </div>
+
+        <!-- Accent colors in use -->
+        <div class="swatch-section">
+          <div class="swatch-section-label">Semantic Accents &mdash; used in app</div>
+          <div class="cg" style="grid-template-columns:repeat(6,1fr)">
+            <div><div class="sw" style="background:#3b82f6"></div><div class="sw-label">blue-500</div></div>
+            <div><div class="sw" style="background:#2563eb"></div><div class="sw-label">blue-600</div></div>
+            <div><div class="sw" style="background:#eff6ff"></div><div class="sw-label">blue-50</div></div>
+            <div><div class="sw" style="background:#10b981"></div><div class="sw-label">emerald-500</div></div>
+            <div><div class="sw" style="background:#ecfdf5"></div><div class="sw-label">emerald-50</div></div>
+            <div><div class="sw" style="background:#eab308"></div><div class="sw-label">yellow-500</div></div>
+          </div>
+          <div class="cg" style="grid-template-columns:repeat(6,1fr)">
+            <div><div class="sw" style="background:#ef4444"></div><div class="sw-label">red-500</div></div>
+            <div><div class="sw" style="background:#fef2f2"></div><div class="sw-label">red-50</div></div>
+            <div><div class="sw" style="background:#f59e0b"></div><div class="sw-label">amber-500</div></div>
+            <div><div class="sw" style="background:#fffbeb"></div><div class="sw-label">amber-50</div></div>
+            <div><div class="sw" style="background:rgba(0,0,0,0.7)"></div><div class="sw-label">black/70</div></div>
+            <div><div class="sw" style="background:rgba(255,255,255,0.1);border:1px solid #e5e7eb"></div><div class="sw-label">white/10</div></div>
+          </div>
+        </div>
+
+        <!-- Gradients used in event cards / promo -->
+        <div class="swatch-section">
+          <div class="swatch-section-label">Gradients &mdash; event cards &amp; promo</div>
+          <div class="cg" style="grid-template-columns:repeat(4,1fr)">
+            <div><div class="sw" style="background:linear-gradient(135deg,#111827,#1f2937,#111827);aspect-ratio:2/1;border-radius:4px"></div><div class="sw-label">dark-promo</div></div>
+            <div><div class="sw" style="background:linear-gradient(135deg,#3b82f6,#4f46e5);aspect-ratio:2/1;border-radius:4px"></div><div class="sw-label">blue-indigo</div></div>
+            <div><div class="sw" style="background:linear-gradient(135deg,#10b981,#0d9488);aspect-ratio:2/1;border-radius:4px"></div><div class="sw-label">emerald-teal</div></div>
+            <div><div class="sw" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);aspect-ratio:2/1;border-radius:4px"></div><div class="sw-label">purple-pink</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Cards -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Event Card</span>
+          <span class="sh-meta">Discover &amp; Home pages</span>
+        </div>
+
+        <div class="card-demo">
+          <div class="card-img" style="background:linear-gradient(135deg,#111827,#1f2937,#111827)">
+            <div class="card-img-label">AI Summit</div>
+            <span class="chip chip-type-online" style="font-size:9px;padding:2px 7px">Online</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">Apr 20, 2026 &nbsp;&middot;&nbsp; San Francisco</div>
+            <div class="card-title">AI Summit 2026</div>
+            <div style="font-size:10px;color:#9ca3af;margin-top:2px">Hosted by Tech Collective &nbsp;&middot;&nbsp; 500 attendees</div>
+            <div style="display:flex;gap:4px;margin-top:6px">
+              <span class="chip chip-default" style="font-size:9px">Technology</span>
+              <span class="chip chip-blue" style="font-size:9px">AI &amp; ML</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div style="display:flex;align-items:center">
+              <div class="av" style="width:22px;height:22px;font-size:8px;border:2px solid #fff;z-index:3">NR</div>
+              <div class="av" style="width:22px;height:22px;font-size:8px;border:2px solid #fff;margin-left:-7px;z-index:2;background:#374151">OK</div>
+              <div class="av" style="width:22px;height:22px;font-size:8px;border:2px solid #fff;margin-left:-7px;z-index:1;background:#6b7280">+3</div>
+            </div>
+            <button class="btn btn-primary btn-sm">View Event</button>
+          </div>
+        </div>
+
+        <div class="card-demo">
+          <div class="card-img" style="background:linear-gradient(135deg,#374151,#4b5563)">
+            <div class="card-img-label">Pitch Night</div>
+            <div style="display:flex;gap:4px">
+              <span class="chip chip-featured" style="font-size:8px">Featured</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">Mar 28, 2026 &nbsp;&middot;&nbsp; Palo Alto</div>
+            <div class="card-title">Startup Pitch Night</div>
+            <div style="font-size:10px;color:#9ca3af;margin-top:2px">Hosted by Founder Hub &nbsp;&middot;&nbsp; 150 seats</div>
+          </div>
+          <div class="card-footer">
+            <span class="chip chip-emerald">Saved</span>
+            <button class="btn btn-secondary btn-sm">View Event</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark Promo Card -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Promo Card</span>
+          <span class="sh-meta">Homepage hero sections</span>
+        </div>
+        <div class="dark-card">
+          <div class="dark-card-noise"></div>
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.3);margin-bottom:6px;position:relative">Digo Pro</div>
+          <div class="dark-card-title">Build events that get remembered.</div>
+          <div class="dark-card-sub">Tools for organizers who take their craft seriously.</div>
+          <div class="dark-card-actions">
+            <button class="btn" style="background:#fff;color:#111827;font-size:10px;padding:6px 14px;border-radius:8px">Get Started</button>
+            <button class="btn" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.1);font-size:10px;padding:6px 14px;border-radius:8px">Learn More</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Stat Cards</span>
+          <span class="sh-meta">Organizer Dashboard</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="stat-card">
+            <div class="stat-label">Registered</div>
+            <div class="stat-val">210</div>
+            <div class="stat-trend">+12% from last event</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Attended</div>
+            <div class="stat-val">178</div>
+            <div class="stat-trend-neutral">85% show-up rate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Sponsors</div>
+            <div class="stat-val">2</div>
+            <div class="stat-trend">$15,000 raised</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">NPS Score</div>
+            <div class="stat-val">72</div>
+            <div class="stat-trend">Excellent</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <span style="font-size:10px;font-weight:600">Registration goal</span>
+            <span style="font-size:10px;color:#9ca3af">178 / 210</span>
+          </div>
+          <div class="prog-wrap"><div class="prog-bar" style="width:85%;background:#111827"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;margin-top:8px">
+            <span style="font-size:10px;font-weight:600">Sponsorship</span>
+            <span style="font-size:10px;color:#9ca3af">$15k / $20k</span>
+          </div>
+          <div class="prog-wrap"><div class="prog-bar" style="width:75%;background:#3b82f6"></div></div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Data Table</span>
+          <span class="sh-meta">Sponsors &amp; Reports views</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sponsor</th>
+                <th>Tier</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Snowflake</strong></td>
+                <td><span class="chip chip-dark" style="font-size:9px">Platinum</span></td>
+                <td style="font-family:'IBM Plex Mono',monospace">$10,000</td>
+                <td><span class="chip chip-emerald" style="font-size:9px">Active</span></td>
+                <td><button class="btn btn-secondary btn-sm">View</button></td>
+              </tr>
+              <tr>
+                <td><strong>TechEquity</strong></td>
+                <td><span class="chip chip-blue" style="font-size:9px">Gold</span></td>
+                <td style="font-family:'IBM Plex Mono',monospace">$5,000</td>
+                <td><span class="chip chip-emerald" style="font-size:9px">Active</span></td>
+                <td><button class="btn btn-secondary btn-sm">View</button></td>
+              </tr>
+              <tr>
+                <td><strong>Pending Co.</strong></td>
+                <td><span class="chip chip-default" style="font-size:9px">Silver</span></td>
+                <td style="font-family:'IBM Plex Mono',monospace">$2,500</td>
+                <td><span class="chip" style="background:#fffbeb;color:#92400e;font-size:9px">Pending</span></td>
+                <td><button class="btn btn-secondary btn-sm">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /col2 -->
+
+    <!-- ═══ COLUMN 3: Inputs · Badges · Nav · Shell ═══ -->
+    <div class="col">
+
+      <!-- Text Fields -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Text Fields</span>
+          <span class="sh-meta">3 styles &nbsp;·&nbsp; rounded-xl</span>
+        </div>
+        <div class="tf-group">
+          <label class="tf-label">Event Name</label>
+          <input class="tf" type="text" placeholder="e.g. AI Summit 2026"/>
+        </div>
+        <div class="tf-group">
+          <label class="tf-label">Location</label>
+          <input class="tf tf-active" type="text" value="San Francisco, CA"/>
+        </div>
+        <div class="tf-group">
+          <input class="tf-search" type="text" placeholder="Search events, speakers, groups..."/>
+        </div>
+        <div class="tf-group">
+          <label class="tf-label">Category</label>
+          <select class="tf" style="color:#374151">
+            <option>Technology</option>
+            <option>Networking</option>
+            <option>Business</option>
+          </select>
+        </div>
+        <div class="tf-group">
+          <label class="tf-label">Description</label>
+          <textarea class="tf-textarea" placeholder="Describe your event..."></textarea>
+        </div>
+        <div class="tf-group">
+          <label class="tf-label">Filter toggle</label>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-filter-active btn-sm" style="flex:1">All</button>
+            <button class="btn btn-filter-inactive btn-sm" style="flex:1">Online</button>
+            <button class="btn btn-filter-inactive btn-sm" style="flex:1">In Person</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges and Chips -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Badges &amp; Chips</span>
+          <span class="sh-meta">Actual patterns from app</span>
+        </div>
+        <div class="chip-row">
+          <span class="chip chip-type-online">Online</span>
+          <span class="chip chip-type-inperson">In Person</span>
+          <span class="chip chip-dark">Overlay</span>
+        </div>
+        <div class="chip-row">
+          <span class="chip chip-featured">Featured</span>
+          <span class="chip chip-joined">Joined</span>
+          <span class="chip chip-disabled">Coming Soon</span>
+        </div>
+        <div class="chip-row">
+          <span class="chip chip-default">Default</span>
+          <span class="chip chip-blue">Technology</span>
+          <span class="chip chip-emerald">Confirmed</span>
+        </div>
+        <div class="chip-row">
+          <span class="chip" style="background:#fef2f2;color:#dc2626;font-size:9px">Cancelled</span>
+          <span class="chip" style="background:#fffbeb;color:#d97706;font-size:9px">Pending</span>
+          <span class="chip chip-dark" style="font-size:9px">Platinum</span>
+          <span class="chip chip-blue" style="font-size:9px">Gold</span>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Alerts &amp; Feedback</span>
+          <span class="sh-meta">4 semantic states</span>
+        </div>
+        <div class="alert alert-info">
+          <span class="alert-title">Event published</span>
+          <span class="alert-body">Your event is now live and accepting registrations.</span>
+        </div>
+        <div class="alert alert-success">
+          <span class="alert-title">Speaker confirmed</span>
+          <span class="alert-body">Nayam Rahman has accepted your invitation.</span>
+        </div>
+        <div class="alert alert-warning">
+          <span class="alert-title">Action required</span>
+          <span class="alert-body">3 speaker invitations are awaiting a response.</span>
+        </div>
+        <div class="alert alert-danger">
+          <span class="alert-title">Submission failed</span>
+          <span class="alert-body">Please check the form for errors and try again.</span>
+        </div>
+      </div>
+
+      <!-- Avatars -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Avatars</span>
+          <span class="sh-meta">5 sizes &nbsp;·&nbsp; stacked group</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="av" style="width:20px;height:20px;font-size:8px">NR</div>
+          <div class="av" style="width:28px;height:28px;font-size:9px;background:#374151">OK</div>
+          <div class="av" style="width:36px;height:36px;font-size:11px;background:#4b5563">SM</div>
+          <div class="av" style="width:48px;height:48px;font-size:14px;background:#6b7280">CW</div>
+          <div class="av" style="width:60px;height:60px;font-size:18px;background:#9ca3af">TK</div>
+        </div>
+        <div style="display:flex;align-items:center">
+          <div class="av" style="width:30px;height:30px;font-size:9px;border:2px solid #f9fafb;z-index:5;background:#111827">NR</div>
+          <div class="av" style="width:30px;height:30px;font-size:9px;border:2px solid #f9fafb;margin-left:-9px;z-index:4;background:#374151">OK</div>
+          <div class="av" style="width:30px;height:30px;font-size:9px;border:2px solid #f9fafb;margin-left:-9px;z-index:3;background:#4b5563">SM</div>
+          <div class="av" style="width:30px;height:30px;font-size:9px;border:2px solid #f9fafb;margin-left:-9px;z-index:2;background:#9ca3af">+5</div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Navigation</span>
+          <span class="sh-meta">Sidebar &amp; role switcher</span>
+        </div>
+
+        <div class="role-switcher">
+          <button class="role-btn role-active">Organizer</button>
+          <button class="role-btn role-inactive">Attendee</button>
+          <button class="role-btn role-inactive">Speaker</button>
+        </div>
+
+        <div>
+          <div class="nav-section-label">Workspace</div>
+          <div class="nav-item nav-item-active">
+            <div class="nav-icon nav-icon-active">Hm</div>
+            <span>Home</span>
+          </div>
+          <div class="nav-item nav-item-inactive">
+            <div class="nav-icon">Ev</div>
+            <span>My Events</span>
+          </div>
+          <div class="nav-item nav-item-inactive">
+            <div class="nav-icon">Sp</div>
+            <span>Speakers</span>
+          </div>
+          <div class="nav-item nav-item-inactive">
+            <div class="nav-icon">Rp</div>
+            <span>Reports</span>
+            <span class="chip chip-disabled" style="margin-left:auto;font-size:8px">Soon</span>
+          </div>
+          <div class="nav-section-label" style="margin-top:4px">Discover</div>
+          <div class="nav-item nav-item-inactive">
+            <div class="nav-icon">Dc</div>
+            <span>Discover</span>
+          </div>
+          <div class="nav-item nav-item-inactive">
+            <div class="nav-icon">Gr</div>
+            <span>Groups</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Shell -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">App Shell</span>
+          <span class="sh-meta">Fixed top bar &nbsp;+&nbsp; sidebar</span>
+        </div>
+        <div class="shell">
+          <div class="shell-header">
+            <div class="shell-logo">digo</div>
+            <div class="shell-header-nav">
+              <span class="active">Discover</span>
+              <span>Events</span>
+              <span>Groups</span>
+              <span>Calendar</span>
+            </div>
+            <div class="av" style="width:22px;height:22px;font-size:8px;margin-left:10px">SW</div>
+          </div>
+          <div class="shell-body">
+            <div class="shell-sidebar">
+              <div class="role-switcher" style="margin-bottom:10px">
+                <button class="role-btn role-active" style="font-size:8px;padding:3px 4px">Organizer</button>
+                <button class="role-btn role-inactive" style="font-size:8px;padding:3px 4px">Attendee</button>
+              </div>
+              <div class="nav-item nav-item-active" style="padding:4px 6px;font-size:10px">
+                <div class="nav-icon nav-icon-active" style="width:16px;height:16px;font-size:7px">Hm</div>
+                <span>Home</span>
+              </div>
+              <div class="nav-item nav-item-inactive" style="padding:4px 6px;font-size:10px">
+                <div class="nav-icon" style="width:16px;height:16px;font-size:7px">Ev</div>
+                <span>My Events</span>
+              </div>
+              <div class="nav-item nav-item-inactive" style="padding:4px 6px;font-size:10px">
+                <div class="nav-icon" style="width:16px;height:16px;font-size:7px">Sp</div>
+                <span>Speakers</span>
+              </div>
+              <div class="nav-item nav-item-inactive" style="padding:4px 6px;font-size:10px">
+                <div class="nav-icon" style="width:16px;height:16px;font-size:7px">Rp</div>
+                <span>Reports</span>
+              </div>
+            </div>
+            <div class="shell-content">
+              <div class="shell-content-header">My Events</div>
+              <div class="shell-grid">
+                <div class="shell-card"></div>
+                <div class="shell-card"></div>
+                <div class="shell-card"></div>
+                <div class="shell-card"></div>
+                <div class="shell-card"></div>
+                <div class="shell-card"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dropdown -->
+      <div class="block">
+        <div class="sh">
+          <span class="sh-title">Dropdown Menu</span>
+          <span class="sh-meta">rounded-xl &nbsp;·&nbsp; shadow-lg</span>
+        </div>
+        <div class="dropdown">
+          <div class="dd-item">
+            <div class="dd-icon">Ed</div>
+            Edit Event
+          </div>
+          <div class="dd-item">
+            <div class="dd-icon">Cp</div>
+            Duplicate
+          </div>
+          <div class="dd-item">
+            <div class="dd-icon">Sh</div>
+            Share
+          </div>
+          <div class="dd-item" style="color:#dc2626">
+            <div class="dd-icon" style="background:#fef2f2;color:#dc2626">Dl</div>
+            Delete Event
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /col3 -->
+  </div>
+</div>
+</body>
+</html>

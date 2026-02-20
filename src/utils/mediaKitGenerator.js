@@ -46,7 +46,7 @@ export const generateMediaKitPackage = (event, mediaKit, speakers) => {
       social: {
         email: s.email || '',
         linkedin: s.linkedin || '',
-        twitter: s.twitter || '',
+        x: s.twitter || '',
         website: s.website || ''
       }
     })),
@@ -72,7 +72,7 @@ export const generateMediaKitPackage = (event, mediaKit, speakers) => {
  * @returns {Object} Social templates organized by platform and role
  */
 const generateAllSocialTemplates = (event, shareableUrl) => {
-  const platforms = ['linkedin', 'twitter', 'instagram', 'email'];
+  const platforms = ['linkedin', 'x', 'instagram', 'email'];
   const roles = ['organizer', 'speaker', 'attendee'];
   const templates = {};
 

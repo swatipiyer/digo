@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UtensilsCrossed, Package, Wrench, Mail, Globe, FileText, ArrowLeft, Check, Building2 } from 'lucide-react';
-import Header from '../components/Header';
 
 export default function EventServicesPage() {
   const [serviceType, setServiceType] = useState('food');
@@ -155,17 +154,16 @@ export default function EventServicesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
         <div className="mb-8">
           <Link
-            to="/discover"
+            to="/"
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Discover
+            Back to Home
           </Link>
           <div className="flex items-center gap-3 mb-2">
             <div className={`w-12 h-12 ${activeService.bgColor} rounded-lg flex items-center justify-center`}>

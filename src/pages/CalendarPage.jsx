@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar as CalendarIcon, MapPin, Users, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
-import Header from '../components/Header';
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1)); // January 2026
+  const [currentDate, setCurrentDate] = useState(() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), 1); });
 
   // Sample events
   const events = [
@@ -73,7 +72,6 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero */}

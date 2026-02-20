@@ -114,7 +114,7 @@ export default function SpeakerPhotoEditor({ speaker, onUpdate, onClose }) {
                   <img
                     src={preview}
                     alt={speaker.name}
-                    className="w-40 h-40 object-cover rounded-xl border-2 border-teal-600"
+                    className="w-40 h-40 object-cover rounded-xl border-2 border-blue-600"
                   />
                   {newPhoto && (
                     <button
@@ -146,7 +146,7 @@ export default function SpeakerPhotoEditor({ speaker, onUpdate, onClose }) {
               id="photo-edit-input"
               accept="image/*"
               onChange={handlePhotoChange}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             />
           </div>
 
@@ -196,7 +196,7 @@ export default function SpeakerPhotoEditor({ speaker, onUpdate, onClose }) {
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 px-4 py-3 bg-teal-600 text-white rounded-lg font-medium text-sm hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSaving ? (
               <>

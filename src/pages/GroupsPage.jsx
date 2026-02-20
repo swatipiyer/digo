@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Users, MessageCircle, Calendar, Search, CheckCircle, Check, Filter } from 'lucide-react';
-import Header from '../components/Header';
 
-export default function GroupsPage() {
+export default function GroupsPage({ embedded = false }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -115,11 +114,9 @@ export default function GroupsPage() {
   const myGroups = filteredGroups.filter(group => joinedGroups.includes(group.id));
   const discoverGroups = filteredGroups.filter(group => !joinedGroups.includes(group.id));
 
-  return (
-    <div className="min-h-screen bg-white">
-      <Header />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  const content = (
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Groups</h1>
@@ -314,7 +311,7 @@ export default function GroupsPage() {
           )}
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Toast Notification */}
       {showToast && (
@@ -325,6 +322,13 @@ export default function GroupsPage() {
           </div>
         </div>
       )}
+    </>
+  );
+
+  if (embedded) return content;
+  return (
+    <div className="min-h-screen bg-white">
+      {content}
     </div>
   );
 }

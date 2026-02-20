@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar as CalendarIcon, MapPin, Users, Globe, ArrowLeft, Clock, Video, FileText, Image as ImageIcon, TrendingUp, Building2 } from 'lucide-react';
-import Header from '../components/Header';
 
 export default function OrganizationEventsPage() {
   const { orgId } = useParams();
@@ -133,8 +132,8 @@ export default function OrganizationEventsPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Organization not found</h1>
           <p className="text-gray-600 mb-4">We couldn't find an organization with that ID.</p>
-          <Link to="/discover" className="text-blue-600 font-medium hover:underline">
-            Back to discover
+          <Link to="/explore" className="text-blue-600 font-medium hover:underline">
+            Back to Explore
           </Link>
         </div>
       </div>
@@ -168,7 +167,6 @@ export default function OrganizationEventsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}

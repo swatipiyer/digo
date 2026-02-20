@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Download, Share2, Copy, Image as ImageIcon, Users, Linkedin,
-  Twitter, Instagram, Mail, FileText, Palette, ArrowLeft,
+  Instagram, Mail, FileText, Palette, ArrowLeft,
   Check, Upload, X, ExternalLink
 } from 'lucide-react';
-import Header from '../components/Header';
+import XLogo from '../components/XLogo';
 import SpeakerPhotoEditor from '../components/SpeakerPhotoEditor';
 import {
   getMediaKit,
@@ -147,7 +147,7 @@ export default function MediaKitPage() {
         attendee: `Looking forward to attending ${event?.name}!\n\n📅 ${event?.date}\n📍 ${event?.location}\n\nGreat lineup of speakers and content. See you there!\n\n#${event?.name?.replace(/\s+/g, '')}`,
         marketing: `We're excited to promote ${event?.name}.\n\n📅 ${event?.date}\n📍 ${event?.location}\n\nUse approved assets from the media kit and help us drive registrations this week.\n\nRegister now: [Link]\n\n#${event?.name?.replace(/\s+/g, '')} #Marketing #EventPromotion`
       },
-      twitter: {
+      x: {
         organizer: `🎤 ${event?.name} - ${event?.date}\n\n📍 ${event?.location}\n\nAmazing speakers, incredible content. Register now! 🎟️\n\n[Link]\n\n#${event?.name?.replace(/\s+/g, '')}`,
         speaker: `Excited to speak at ${event?.name}! ${event?.date} 🎤\n\nJoin me to learn about [Topic] 💡\n\nRegister: [Link]`,
         attendee: `Can't wait for ${event?.name}! ${event?.date} 🎉\n\nSee you there! #${event?.name?.replace(/\s+/g, '')}`,
@@ -173,7 +173,6 @@ export default function MediaKitPage() {
   if (!event || !mediaKit) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <p className="text-gray-600">Loading media kit...</p>
         </div>
@@ -183,7 +182,6 @@ export default function MediaKitPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back Link */}
@@ -200,7 +198,7 @@ export default function MediaKitPage() {
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 bg-teal-600 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -240,7 +238,7 @@ export default function MediaKitPage() {
             {/* Brand Assets Section */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Palette className="w-5 h-5 text-teal-600" />
+                <Palette className="w-5 h-5 text-blue-600" />
                 Brand Assets
               </h2>
 
@@ -260,7 +258,7 @@ export default function MediaKitPage() {
                       <button
                         type="button"
                         onClick={() => downloadAsset(logoPreview, `${event.name}_logo.png`)}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 transition-colors"
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
                       >
                         <Download className="w-3 h-3" />
                       </button>
@@ -270,7 +268,7 @@ export default function MediaKitPage() {
                     type="file"
                     accept="image/*"
                     onChange={handleLogoUpload}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   />
                 </div>
 
@@ -289,7 +287,7 @@ export default function MediaKitPage() {
                       <button
                         type="button"
                         onClick={() => downloadAsset(bannerPreview, `${event.name}_banner.jpg`)}
-                        className="absolute top-2 right-2 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 transition-colors"
+                        className="absolute top-2 right-2 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
                       >
                         <Download className="w-4 h-4" />
                       </button>
@@ -299,7 +297,7 @@ export default function MediaKitPage() {
                     type="file"
                     accept="image/*"
                     onChange={handleBannerUpload}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   />
                 </div>
 
@@ -335,7 +333,7 @@ export default function MediaKitPage() {
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-teal-600" />
+                  <Users className="w-5 h-5 text-blue-600" />
                   Speaker Lineup ({speakers.length})
                 </h2>
               </div>
@@ -380,7 +378,7 @@ export default function MediaKitPage() {
                           )}
                           <button
                             onClick={() => setEditingSpeaker(speaker)}
-                            className="flex-1 px-3 py-1.5 text-xs bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                            className="flex-1 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                           >
                             Edit
                           </button>
@@ -405,7 +403,7 @@ export default function MediaKitPage() {
               <div className="flex gap-2 mb-4 flex-wrap">
                 {[
                   { id: 'linkedin', icon: Linkedin, label: 'LinkedIn' },
-                  { id: 'twitter', icon: Twitter, label: 'Twitter' },
+                  { id: 'x', icon: XLogo, label: 'X' },
                   { id: 'instagram', icon: Instagram, label: 'Instagram' },
                   { id: 'email', icon: Mail, label: 'Email' }
                 ].map((platform) => (
@@ -413,7 +411,7 @@ export default function MediaKitPage() {
                     key={platform.id}
                     onClick={() => setSelectedPlatform(platform.id)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${selectedPlatform === platform.id
-                        ? 'bg-teal-600 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                       }`}
                   >
@@ -448,7 +446,7 @@ export default function MediaKitPage() {
 
               <button
                 onClick={() => handleCopyTemplate(getSocialTemplate())}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 text-white rounded-lg font-medium text-sm hover:bg-teal-700 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors"
               >
                 <Copy className="w-4 h-4" />
                 Copy Template

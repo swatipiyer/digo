@@ -28,7 +28,7 @@ export const generateShareTemplates = (event, role, platform, templateIdx = 0, c
         `Looking forward to ${eventName}! 🚀\n\nDate: ${eventDate}\nLocation: ${location}\n\nThis event promises great insights and networking opportunities. If you're in the area, let's connect there!\n\nMore info: ${url}`,
         `Just registered for ${eventName}! 🎯\n\nWhat: ${event.description || 'An incredible event'}\nWhen: ${eventDate}\nWhere: ${location}\n\nWho else is going? Let me know in the comments!\n\n${url}`
       ],
-      twitter: [
+      x: [
         `Excited to attend ${eventName}! 🎉\n\n📅 ${eventDate}\n📍 ${location.split(',')[0]}\n\nRegister: ${url}\n\n#TechEvents #Networking`,
         `Can't wait for ${eventName}! 🚀 ${eventDate}\n\nJoin me: ${url}`,
         `See you at ${eventName}! 🎯 ${eventDate}\n\nRegister: ${url}\n\n#Events #Community`
@@ -54,7 +54,7 @@ export const generateShareTemplates = (event, role, platform, templateIdx = 0, c
         `Honored to be speaking at ${eventName}! 🎯\n\nDate: ${eventDate}\nVenue: ${location}\n\nLooking forward to sharing knowledge and connecting with the community. Hope to see you there!\n\nRegister: ${url}\n\n#PublicSpeaking #ThoughtLeadership`,
         `Speaking at ${eventName}! 🚀\n\n${eventDate} | ${location}\n\nExcited to share insights and connect with amazing people. If you're attending, let's connect!\n\n${url}\n\n#Conference #Speaking #Networking`
       ],
-      twitter: [
+      x: [
         `🎤 Speaking at ${eventName}!\n\n📅 ${eventDate}\n📍 ${location.split(',')[0]}\n\nHope to see you there!\n\n${url}\n\n#Speaker #TechTalks`,
         `Excited to present at ${eventName}! 🚀\n${eventDate}\n\nRegister: ${url}\n\n#Speaking #Events`,
         `Join me at ${eventName}! 🎯\nI'll be sharing insights on ${eventDate}\n\n${url}`
@@ -80,7 +80,7 @@ export const generateShareTemplates = (event, role, platform, templateIdx = 0, c
         `📢 Announcing ${eventName}! 🎯\n\nJoin us on ${eventDate} at ${location} for an unforgettable experience.\n\n${event.description || 'Connect with industry leaders, gain valuable insights, and expand your network.'}\n\nDon't miss out! Register here: ${url}\n\n#Events #Leadership #Innovation`,
         `Mark your calendars! 📅 ${eventName}\n\nWhen: ${eventDate}\nWhere: ${location}\n\nWhy attend?\n• Industry-leading speakers\n• Hands-on workshops\n• Premium networking\n• Actionable takeaways\n\nRegister: ${url}\n\n#Conference #Learning #Community`
       ],
-      twitter: [
+      x: [
         `🚀 ${eventName}\n\n📅 ${eventDate}\n📍 ${location.split(',')[0]}\n\nRegister now: ${url}\n\n#Event #Conference #Networking`,
         `Join us for ${eventName}! 🎯\n${eventDate} | ${location.split(',')[0]}\n\nLimited spots available!\n${url}\n\n#TechEvent`,
         `📢 ${eventName} - ${eventDate}\n\nDon't miss out!\n\nRegister: ${url}\n\n#Events #Community`
@@ -101,9 +101,9 @@ export const generateShareTemplates = (event, role, platform, templateIdx = 0, c
 
 export const getPlatformTemplateCount = (role, platform) => {
   const templates = {
-    attendee: { email: 2, linkedin: 3, twitter: 3, instagram: 2 },
-    speaker: { email: 2, linkedin: 3, twitter: 3, instagram: 2 },
-    organizer: { email: 2, linkedin: 3, twitter: 3, instagram: 2 }
+    attendee: { email: 2, linkedin: 3, x: 3, instagram: 2 },
+    speaker: { email: 2, linkedin: 3, x: 3, instagram: 2 },
+    organizer: { email: 2, linkedin: 3, x: 3, instagram: 2 }
   };
 
   return templates[role]?.[platform] || 1;

@@ -1,10 +1,22 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Users, DollarSign, X, ArrowLeft, Star, Check } from 'lucide-react';
-import Header from '../components/Header';
 
-export default function VenueDiscoveryPage() {
+export default function VenueDiscoveryPage({ embedded = false }) {
   const [selectedVenue, setSelectedVenue] = useState(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    name: '',
+    email: '',
+    eventDate: '',
+    eventTime: '',
+    attendees: '',
+    eventType: '',
+    setupRequirements: '',
+    cateringNeeds: '',
+    avNeeds: '',
+    message: '',
+  });
 
   // Sample SF Bay Area venues
   const venues = [
@@ -94,34 +106,73 @@ export default function VenueDiscoveryPage() {
     },
   ];
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+  const handleBookingSubmit = (e) => {
+    e.preventDefault();
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    // Create booking request
+    const bookingRequest = {
+      id: Date.now(),
+      venueId: selectedVenue.id,
+      venueName: selectedVenue.name,
+      ...bookingForm,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Save to localStorage
+    const existingBookings = JSON.parse(localStorage.getItem('digo_venue_bookings') || '[]');
+    existingBookings.push(bookingRequest);
+    localStorage.setItem('digo_venue_bookings', JSON.stringify(existingBookings));
+
+    // Show success message (you can add a toast here)
+    alert('Booking request submitted successfully! The venue will review your request.');
+
+    // Reset form and close modal
+    setBookingForm({
+      name: '',
+      email: '',
+      eventDate: '',
+      eventTime: '',
+      attendees: '',
+      eventType: '',
+      setupRequirements: '',
+      cateringNeeds: '',
+      avNeeds: '',
+      message: '',
+    });
+    setShowBookingModal(false);
+  };
+
+  return (
+    <div className={embedded ? '' : 'min-h-screen bg-gray-50'}>
+
+      <main className={embedded ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'}>
         {/* Page Header */}
-        <div className="mb-8">
-          <Link
-            to="/discover"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Discover
-          </Link>
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Digo Venues</h1>
-              <p className="text-lg text-gray-600">Find a venue for your next event</p>
-            </div>
+        {!embedded && (
+          <div className="mb-8">
             <Link
-              to="/add-venue"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              to="/"
+              className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
             >
-              <MapPin className="w-4 h-4" />
-              Submit Venue
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
             </Link>
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">Digo Venues</h1>
+                <p className="text-lg text-gray-600">Find a venue for your next event</p>
+              </div>
+              <Link
+                to="/add-venue"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                <MapPin className="w-4 h-4" />
+                Submit Venue
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Map Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -206,7 +257,10 @@ export default function VenueDiscoveryPage() {
                     </div>
                   </div>
 
-                  <button className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors">
+                  <button
+                    onClick={() => setShowBookingModal(true)}
+                    className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors"
+                  >
                     Request Booking
                   </button>
                 </div>
@@ -250,6 +304,198 @@ export default function VenueDiscoveryPage() {
             )}
           </div>
         </div>
+
+        {/* Booking Request Modal */}
+        {showBookingModal && selectedVenue && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Request Booking</h3>
+                  <p className="text-sm text-gray-600 mt-1">{selectedVenue.name}</p>
+                </div>
+                <button
+                  onClick={() => setShowBookingModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleBookingSubmit} className="p-6 space-y-5">
+                {/* Contact Information */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-gray-900">Contact Information</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Your Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={bookingForm.name}
+                        onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={bookingForm.email}
+                        onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="john@example.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Event Details */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-gray-900">Event Details</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Event Date *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={bookingForm.eventDate}
+                        onChange={(e) => setBookingForm({ ...bookingForm, eventDate: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Event Time *
+                      </label>
+                      <input
+                        type="time"
+                        required
+                        value={bookingForm.eventTime}
+                        onChange={(e) => setBookingForm({ ...bookingForm, eventTime: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Number of Attendees *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        value={bookingForm.attendees}
+                        onChange={(e) => setBookingForm({ ...bookingForm, attendees: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="50"
+                        min="1"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Event Type *
+                      </label>
+                      <select
+                        required
+                        value={bookingForm.eventType}
+                        onChange={(e) => setBookingForm({ ...bookingForm, eventType: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select type</option>
+                        <option value="conference">Conference</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="meetup">Meetup</option>
+                        <option value="networking">Networking Event</option>
+                        <option value="seminar">Seminar</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Requirements */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-gray-900">Requirements</h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Setup Requirements
+                    </label>
+                    <textarea
+                      value={bookingForm.setupRequirements}
+                      onChange={(e) => setBookingForm({ ...bookingForm, setupRequirements: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows="2"
+                      placeholder="Theater style seating, podium, etc."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Catering Needs
+                    </label>
+                    <textarea
+                      value={bookingForm.cateringNeeds}
+                      onChange={(e) => setBookingForm({ ...bookingForm, cateringNeeds: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows="2"
+                      placeholder="Coffee and lunch for 50 people"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      AV & Tech Needs
+                    </label>
+                    <textarea
+                      value={bookingForm.avNeeds}
+                      onChange={(e) => setBookingForm({ ...bookingForm, avNeeds: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows="2"
+                      placeholder="Projector, wireless mics, recording equipment"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Additional Message
+                    </label>
+                    <textarea
+                      value={bookingForm.message}
+                      onChange={(e) => setBookingForm({ ...bookingForm, message: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows="3"
+                      placeholder="Any other details or questions..."
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowBookingModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Submit Request
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

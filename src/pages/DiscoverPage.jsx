@@ -1,790 +1,325 @@
-import { useState } from 'react';
-import { Grid, List, ChevronDown, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, TrendingUp, Star, Building2, Search, Users } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import Header from '../components/Header';
+import {
+  PlayCircle,
+  FileText,
+  Image,
+  Star,
+  MapPin,
+  Globe,
+  ArrowRight,
+} from 'lucide-react';
+import { eventsBySlug } from '../data/eventData';
 
-export default function DiscoverPage() {
-  const { organizerSlug } = useParams();
-  const [viewMode, setViewMode] = useState('list');
-  const [selectedOrganizer, setSelectedOrganizer] = useState('All');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 1, 1)); // February 2026
-  const [userLocation, setUserLocation] = useState('Menlo Park, CA'); // Could be dynamic
-  const [searchQuery, setSearchQuery] = useState('');
-  const [timeFilter, setTimeFilter] = useState('future'); // 'future' | 'past' | 'all'
+const EVENT_IMAGES = {
+  HkGjx: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80',
+  '2': 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80',
+  '3': 'https://images.unsplash.com/photo-1591115765373-5f9cf1da241c?w=800&q=80',
+  '4': 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&q=80',
+  '5': 'https://images.unsplash.com/photo-1587825140708-dfaf18c4f8c5?w=800&q=80',
+  '6': 'https://images.unsplash.com/photo-1560439514-4e9645039924?w=800&q=80',
+};
 
-  // Organization data
-  const organizations = {
-    'techequity-ai': {
-      id: 'techequity-ai',
-      name: 'TechEquity Ai',
-      logo: '/techequityailogo.png',
-      banner: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200',
-      description: 'TechEquity events in and around Silicon Valley. Monthly meet ups, workshops and our yearly Ai Summit conference.',
-      website: 'https://www.techequity-ai.org',
-      members: 2847,
-    }
-  };
+const DEFAULT_EVENT_IMAGE = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80';
 
-  const currentOrganization = organizerSlug ? organizations[organizerSlug] : null;
+const EVENTS = [
+  {
+    id: 'HkGjx',
+    name: 'Product & Business Strategy in AI',
+    subtitle: 'Talks + AI Agent Workshops',
+    date: '2026-02-19',
+    time: '5:00 PM',
+    location: 'Menlo Park, CA',
+    organizer: 'TechEquity Ai',
+    organizerSlug: 'techequity-ai',
+    eventType: 'in-person',
+    featured: true,
+    externalUrl: 'https://lu.ma/example-event-1',
+  },
+  {
+    id: '2',
+    name: 'Spring 2026 AI Forum',
+    subtitle: 'Leadership + Product Sessions',
+    date: '2026-03-31',
+    time: '10:00 AM',
+    location: 'Menlo Park, CA',
+    organizer: 'TechEquity Ai',
+    organizerSlug: 'techequity-ai',
+    eventType: 'in-person',
+    featured: true,
+    externalUrl: 'https://eventbrite.com/example-event-2',
+  },
+  {
+    id: '3',
+    name: 'Workforce Transformation with AI',
+    subtitle: 'Practical implementation stories',
+    date: '2026-04-28',
+    time: '5:00 PM',
+    location: 'Online',
+    organizer: 'TechEquity Ai',
+    organizerSlug: 'techequity-ai',
+    eventType: 'online',
+    featured: false,
+    externalUrl: 'https://lu.ma/example-event-3',
+  },
+  {
+    id: '4',
+    name: 'TechEquity Event #5',
+    subtitle: 'Workshop highlights and demos',
+    date: '2026-05-26',
+    time: '5:00 PM',
+    location: 'Menlo Park, CA',
+    organizer: 'TechEquity Ai',
+    organizerSlug: 'techequity-ai',
+    eventType: 'in-person',
+    featured: false,
+    externalUrl: 'https://lu.ma/example-event-4',
+  },
+  {
+    id: '5',
+    name: 'TechEquity Event #6',
+    subtitle: 'Networking + recorded keynotes',
+    date: '2026-06-30',
+    time: '5:00 PM',
+    location: 'Menlo Park, CA',
+    organizer: 'TechEquity Ai',
+    organizerSlug: 'techequity-ai',
+    eventType: 'in-person',
+    featured: false,
+    externalUrl: 'https://lu.ma/example-event-5',
+  },
+  {
+    id: '6',
+    name: 'TechEquity Event #7',
+    subtitle: 'Business strategy deep dives',
+    date: '2026-07-28',
+    time: '5:00 PM',
+    location: 'Online',
+    organizer: 'TechEquity Ai',
+    organizerSlug: 'techequity-ai',
+    eventType: 'online',
+    featured: false,
+    externalUrl: 'https://lu.ma/example-event-6',
+  },
+];
 
-  // Sample events for discovery
-  const events = [
-    {
-      id: 'HkGjx',
-      name: 'Product & Business Strategy in AI: Talks + AI Agent Workshops',
-      date: '2026-02-19',
-      time: '5:00 PM',
-      location: '135 Constitution Dr, Menlo Park, CA 94025',
-      organizer: 'TechEquity Ai',
-      organizerSlug: 'techequity-ai',
-      category: 'AI & Technology',
-      type: 'Workshop',
-      featured: true,
-      distance: '0.5 miles',
-      externalUrl: 'https://lu.ma/example-event-1',
-      image: null,
-      registered: 245,
-    },
-    {
-      id: 2,
-      name: 'Spring 2026 Ai Forum',
-      date: '2026-03-31',
-      time: '10:00 AM',
-      location: '135 Constitution Dr, Menlo Park, CA 94025',
-      organizer: 'TechEquity Ai',
-      organizerSlug: 'techequity-ai',
-      category: 'AI & Technology',
-      type: 'Conference',
-      featured: true,
-      distance: '0.5 miles',
-      externalUrl: 'https://eventbrite.com/example-event-2',
-      image: null,
-      registered: 487,
-    },
-    {
-      id: 3,
-      name: 'Workforce Transformation with AI',
-      date: '2026-04-28',
-      time: '5:00 PM',
-      location: '135 Constitution Dr, Menlo Park, CA 94025',
-      organizer: 'TechEquity Ai',
-      organizerSlug: 'techequity-ai',
-      category: 'Business & Strategy',
-      type: 'Talk',
-      featured: false,
-      distance: '0.5 miles',
-      externalUrl: 'https://lu.ma/example-event-3',
-      image: null,
-      registered: 156,
-    },
-    {
-      id: 4,
-      name: 'TechEquity Event #5',
-      date: '2026-05-26',
-      time: '5:00 PM',
-      location: '135 Constitution Dr, Menlo Park, CA 94025',
-      organizer: 'TechEquity Ai',
-      organizerSlug: 'techequity-ai',
-      category: 'AI & Technology',
-      type: 'Workshop',
-      featured: false,
-      distance: '0.5 miles',
-      externalUrl: 'https://lu.ma/example-event-4',
-      image: null,
-      registered: 198,
-    },
-    {
-      id: 5,
-      name: 'TechEquity Event #6',
-      date: '2026-06-30',
-      time: '5:00 PM',
-      location: '135 Constitution Dr, Menlo Park, CA 94025',
-      organizer: 'TechEquity Ai',
-      organizerSlug: 'techequity-ai',
-      category: 'AI & Technology',
-      type: 'Networking',
-      featured: false,
-      distance: '0.5 miles',
-      externalUrl: 'https://lu.ma/example-event-5',
-      image: null,
-      registered: 312,
-    },
-    {
-      id: 6,
-      name: 'TechEquity Event #7',
-      date: '2026-07-28',
-      time: '5:00 PM',
-      location: '135 Constitution Dr, Menlo Park, CA 94025',
-      organizer: 'TechEquity Ai',
-      organizerSlug: 'techequity-ai',
-      category: 'Business & Strategy',
-      type: 'Talk',
-      featured: false,
-      distance: '0.5 miles',
-      externalUrl: 'https://lu.ma/example-event-6',
-      image: null,
-      registered: 224,
-    },
-  ];
+const ORGANIZATIONS = {
+  'techequity-ai': {
+    id: 'techequity-ai',
+    name: 'TechEquity Ai',
+    logo: '/techequityailogo.png',
+    banner: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200',
+    description:
+      'TechEquity events in and around Silicon Valley. Monthly meetups, workshops, and annual summit experiences.',
+    members: 2847,
+  },
+};
 
-  // Get unique values
-  const organizers = ['All', ...new Set(events.map(event => event.organizer))];
-  const categories = ['All', ...new Set(events.map(event => event.category))];
-
-  // Filter events
-  const filteredEvents = events.filter(event => {
-    const matchesOrganizer = selectedOrganizer === 'All' || event.organizer === selectedOrganizer;
-    const matchesCategory = selectedCategory === 'All' || event.category === selectedCategory;
-    const matchesOrgSlug = !organizerSlug || event.organizerSlug === organizerSlug;
-
-    // Search filter
-    const matchesSearch = searchQuery === '' ||
-      event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.organizer.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // Time filter (future/past)
-    const eventDate = new Date(event.date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day
-    const matchesTime = timeFilter === 'all' ? true :
-      timeFilter === 'future' ? eventDate >= today : eventDate < today;
-
-    return matchesOrganizer && matchesCategory && matchesOrgSlug && matchesSearch && matchesTime;
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
+}
 
-  // Get featured events
-  const featuredEvents = events.filter(event => event.featured).slice(0, 3);
-
-  // Get nearby events (sorted by distance)
-  const nearbyEvents = events
-    .filter(event => parseFloat(event.distance) <= 5) // Within 5 miles
-    .sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
-    .slice(0, 4);
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const getMonthAbbr = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  };
-
-  const getShortLocation = (location) => {
-    const parts = location.split(',');
-    return parts.length > 1 ? parts.slice(-2).join(',').trim() : location;
-  };
-
-  // Calendar functions
-  const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-    return { daysInMonth, startingDayOfWeek, year, month };
-  };
-
-  const getEventsForDate = (date) => {
-    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    return filteredEvents.filter((event) => event.date === dateStr);
-  };
-
-  const changeMonth = (delta) => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1));
-  };
-
-  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate);
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  // Create calendar grid
-  const calendarDays = [];
-  for (let i = 0; i < startingDayOfWeek; i++) {
-    calendarDays.push(null);
+function getEventMediaCounts(eventId) {
+  const hasRealUrl = (url) => Boolean(url) && url !== '#';
+  const eventData = eventsBySlug[eventId];
+  if (!eventData) {
+    return { videos: 0, slides: 0, photos: 0 };
   }
-  for (let day = 1; day <= daysInMonth; day++) {
-    calendarDays.push(day);
-  }
+
+  const eventVideos = (eventData.videos || []).filter((video) => hasRealUrl(video.url)).length;
+  const sessionVideos = (eventData.sessions || []).filter((session) => hasRealUrl(session.videoUrl)).length;
+
+  const eventSlides = (eventData.presentations || []).filter((presentation) => hasRealUrl(presentation.url)).length;
+  const sessionSlides = (eventData.sessions || []).filter((session) => hasRealUrl(session.presentationUrl)).length;
+
+  const eventPhotos = (eventData.photos || []).length;
+  const sessionPhotos = (eventData.sessions || []).reduce(
+    (count, session) => count + (session.photos?.length || 0),
+    0
+  );
+
+  return {
+    videos: eventVideos + sessionVideos,
+    slides: eventSlides + sessionSlides,
+    photos: eventPhotos + sessionPhotos,
+  };
+}
+
+
+function EventCard({ event }) {
+  const hasContent = event.media.videos > 0 || event.media.slides > 0 || event.media.photos > 0;
+  const eventImage = EVENT_IMAGES[event.id] || DEFAULT_EVENT_IMAGE;
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Organization Header (when viewing specific organization) */}
-        {currentOrganization && (
-          <div className="mb-8">
-            <div className="relative bg-white border border-gray-200 rounded-lg overflow-hidden">
-              {/* Banner Image */}
-              <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                {currentOrganization.banner ? (
-                  <img
-                    src={currentOrganization.banner}
-                    alt={`${currentOrganization.name} banner`}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Building2 className="w-16 h-16 text-gray-400" />
-                  </div>
-                )}
-              </div>
-
-              {/* Logo/Profile Picture - Overlapping the banner */}
-              <div className="relative px-6 pb-6">
-                <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
-                  <div className="w-32 h-32 bg-white border-4 border-white rounded-lg shadow-lg flex items-center justify-center overflow-hidden">
-                    <img src={currentOrganization.logo} alt={currentOrganization.name} className="w-full h-full object-contain p-3" />
-                  </div>
-                </div>
-
-                {/* Spacer to account for overlapping logo */}
-                <div className="h-20"></div>
-              </div>
-            </div>
+    <Link to={`/events/${event.id}`} className="group block">
+      <article className="bg-white rounded-xl overflow-hidden hover:shadow-md transition-all border border-gray-200">
+        {/* Thumbnail */}
+        <div className="relative aspect-video bg-gray-100">
+          <img
+            src={eventImage}
+            alt={event.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          {/* Location type badge */}
+          <div className="absolute top-2 left-2">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium backdrop-blur-sm ${
+              event.eventType === 'online'
+                ? 'bg-blue-500/90 text-white'
+                : 'bg-white/90 text-gray-900'
+            }`}>
+              {event.eventType === 'online' ? <Globe className="w-3 h-3" /> : <MapPin className="w-3 h-3" />}
+              {event.eventType === 'online' ? 'Online' : 'In Person'}
+            </span>
           </div>
-        )}
-
-        {/* Page Header (when not viewing specific organization) */}
-        {!currentOrganization && (
-          <div className="mb-8">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Discover Events</h1>
-                <p className="text-lg text-gray-600">Find events near you, by category, or browse all upcoming events</p>
-              </div>
-              <Link
-                to="/add-venue"
-                className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors whitespace-nowrap"
-              >
-                <Building2 className="w-4 h-4" />
-                Add Venue
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Search Bar */}
-        {!currentOrganization && (
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search events or locations..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-900"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Category Filters */}
-        {!currentOrganization && (
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            {['All', 'Technology', 'Networking', 'Design', 'Business'].map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === category
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* View Mode Toggle & Organizer Filter */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <label htmlFor="organizer-filter" className="text-sm font-medium text-gray-700">
-              Organizer:
-            </label>
-            <div className="relative">
-              <select
-                id="organizer-filter"
-                value={selectedOrganizer}
-                onChange={(e) => setSelectedOrganizer(e.target.value)}
-                className="appearance-none pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white text-gray-900 text-sm font-medium cursor-pointer hover:border-gray-300 transition-colors"
-              >
-                {organizers.map((organizer) => (
-                  <option key={organizer} value={organizer}>
-                    {organizer}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" />
-            </div>
-            {(selectedOrganizer !== 'All' || selectedCategory !== 'All') && (
-              <span className="text-sm text-gray-600">
-                {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''}
+          {/* Media counts overlay */}
+          <div className="absolute bottom-2 right-2 flex gap-1.5">
+            {event.media.videos > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-black/75 text-white text-xs font-medium">
+                <PlayCircle className="w-3 h-3" />
+                {event.media.videos}
+              </span>
+            )}
+            {event.media.slides > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-black/75 text-white text-xs font-medium">
+                <FileText className="w-3 h-3" />
+                {event.media.slides}
+              </span>
+            )}
+            {event.media.photos > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-black/75 text-white text-xs font-medium">
+                <Image className="w-3 h-3" />
+                {event.media.photos}
               </span>
             )}
           </div>
-
-          {/* Future/Past Toggle & View Mode Toggle */}
-          <div className="flex items-center gap-3">
-            {/* Future/Past Toggle */}
-            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-              <button
-                onClick={() => setTimeFilter('future')}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  timeFilter === 'future' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Future
-              </button>
-              <button
-                onClick={() => setTimeFilter('past')}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  timeFilter === 'past' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Past
-              </button>
-              <button
-                onClick={() => setTimeFilter('all')}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  timeFilter === 'all' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                All
-              </button>
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded transition-colors ${
-                viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-50'
-              }`}
-              aria-label="Grid view"
-            >
-              <Grid className="w-5 h-5 text-gray-700" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded transition-colors ${
-                viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-50'
-              }`}
-              aria-label="List view"
-            >
-              <List className="w-5 h-5 text-gray-700" />
-            </button>
-            <button
-              onClick={() => setViewMode('calendar')}
-              className={`p-2 rounded transition-colors ${
-                viewMode === 'calendar' ? 'bg-white shadow-sm' : 'hover:bg-gray-50'
-              }`}
-              aria-label="Calendar view"
-            >
-              <CalendarIcon className="w-5 h-5 text-gray-700" />
-            </button>
-            </div>
-          </div>
         </div>
 
-        {/* Featured Events */}
-        {!currentOrganization && featuredEvents.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-3">
-              <Star className="w-4 h-4 text-blue-600" />
-              <h2 className="text-lg font-bold text-gray-900">Featured Events</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {featuredEvents.slice(0, 2).map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-white border border-blue-600 rounded-lg overflow-hidden hover:shadow-md transition-all group flex"
-                >
-                  {/* Event Image or Placeholder */}
-                  <div className="relative bg-gradient-to-br from-blue-50 to-blue-100 w-32 flex-shrink-0 flex items-center justify-center p-2">
-                    {/* Featured Badge */}
-                    <div className="absolute top-1 left-1 bg-blue-600 text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-0.5">
-                      <Star className="w-2 h-2" />
-                      Featured
-                    </div>
-
-                    {/* Month Badge */}
-                    <div className="absolute top-1 right-1 bg-white px-1.5 py-1 rounded shadow-sm">
-                      <span className="text-[10px] font-bold text-gray-900">{getMonthAbbr(event.date)}</span>
-                    </div>
-                  </div>
-
-                  {/* Event Details */}
-                  <div className="p-2 flex-1 flex flex-col">
-                    <h3 className="text-xs font-bold text-gray-900 mb-1 line-clamp-1">
-                      {event.name}
-                    </h3>
-
-                    <div className="space-y-0.5 text-[10px] text-gray-600 mb-2">
-                      <div className="flex items-center gap-1">
-                        <CalendarIcon className="w-3 h-3" />
-                        {formatDate(event.date)}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        <span className="truncate">{getShortLocation(event.location)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        <span>{event.registered || 0} registered</span>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-1 mt-auto">
-                      <a
-                        href={event.externalUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 px-2 py-1 border border-gray-200 text-gray-900 text-[10px] font-medium rounded hover:border-gray-300 hover:bg-gray-50 transition-colors text-center"
-                      >
-                        Register
-                      </a>
-                      <Link
-                        to={`/events/${event.id}`}
-                        className="flex-1 px-2 py-1 bg-gray-900 text-white text-[10px] font-medium rounded hover:bg-gray-800 transition-colors text-center"
-                      >
-                        Digo
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Info */}
+        <div className="p-3">
+          <h3 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors line-clamp-2 text-sm">
+            {event.name}
+          </h3>
+          <p className="text-xs text-gray-500 mt-1">{event.organizer}</p>
+          <div className="flex items-center justify-between mt-1.5">
+            <p className="text-xs text-gray-400">
+              {formatDate(event.date)} · {event.location}
+            </p>
+            {hasContent && (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600">
+                View Content <ArrowRight className="w-3 h-3" />
+              </span>
+            )}
           </div>
-        )}
+        </div>
+      </article>
+    </Link>
+  );
+}
 
-        {/* Browse by Category */}
-        {!currentOrganization && (
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Browse by Category</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedCategory === category
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+export default function DiscoverPage({ embedded = false }) {
+  const { organizerSlug } = useParams();
+  const currentOrganization = organizerSlug ? ORGANIZATIONS[organizerSlug] : null;
+  const contentEvents = EVENTS.map((event) => ({
+    ...event,
+    media: getEventMediaCounts(event.id),
+  }));
+
+  const scopedEvents = contentEvents.filter((event) =>
+    organizerSlug ? event.organizerSlug === organizerSlug : true
+  );
+  const featuredEvents = scopedEvents.filter((event) => event.featured).slice(0, 2);
+
+  const content = (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {currentOrganization && (
+        <section className="mb-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="h-44 bg-gray-100 relative">
+            {currentOrganization.banner && (
+              <img
+                src={currentOrganization.banner}
+                alt={`${currentOrganization.name} banner`}
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
-        )}
-
-        {/* All Events - Different Views */}
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {filteredEvents.map((event) => (
-              <div
-                key={event.id}
-                className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all group"
-              >
-                {/* Event Image or Placeholder */}
-                <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 aspect-[4/3] flex items-center justify-center p-6">
-                  {/* Month Badge */}
-                  <div className="absolute top-4 left-4 bg-white px-3 py-2 rounded shadow-sm">
-                    <span className="text-sm font-bold text-gray-900">{getMonthAbbr(event.date)}</span>
-                  </div>
-
-                  {/* Type Badge */}
-                  <div className="absolute top-4 right-4 bg-gray-900 text-white px-3 py-1 rounded-full text-xs font-medium">
-                    {event.type}
-                  </div>
-
-                  {/* Event Name as Placeholder */}
-                  {!event.image && (
-                    <div className="bg-white rounded-lg p-6 max-w-full">
-                      <h3 className="text-2xl font-bold text-gray-900 leading-tight">
-                        {event.name.split(':')[0]}
-                      </h3>
-                      {event.name.includes(':') && (
-                        <p className="text-sm text-gray-600 mt-2">
-                          {event.name.split(':')[1].trim()}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Event Details */}
-                <div className="p-4">
-                  <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2">
-                    {event.name}
-                  </h3>
-
-                  <div className="space-y-2 text-sm text-gray-600 mb-4">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4" />
-                      {formatDate(event.date)}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate">{getShortLocation(event.location)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      <span>{event.registered || 0} registered</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 mb-3">
-                    <a
-                      href={event.externalUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 px-3 py-2 border border-gray-200 text-gray-900 text-xs font-medium rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-center"
-                    >
-                      Register
-                    </a>
-                    <Link
-                      to={`/events/${event.id}`}
-                      className="flex-1 px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors text-center"
-                    >
-                      Digo
-                    </Link>
-                  </div>
-
-                  {/* Organizer Badge */}
-                  <Link
-                    to={`/discover/organizations/${event.organizerSlug}`}
-                    className="flex items-center gap-2 pt-3 border-t border-gray-200 hover:bg-gray-50 -mx-4 -mb-4 px-4 pb-4 rounded-b-lg transition-colors"
-                  >
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span className="text-sm font-medium text-blue-600">{event.organizer}</span>
-                  </Link>
-                </div>
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-xl bg-white border border-gray-200 p-2">
+                <img
+                  src={currentOrganization.logo}
+                  alt={currentOrganization.name}
+                  className="w-full h-full object-contain"
+                />
               </div>
-            ))}
-          </div>
-        ) : viewMode === 'calendar' ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-12">
-            {/* Calendar Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {monthNames[month]} {year}
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => changeMonth(-1)}
-                  className="p-2 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all"
-                >
-                  <ChevronLeft className="w-5 h-5 text-gray-900" />
-                </button>
-                <button
-                  onClick={() => changeMonth(1)}
-                  className="p-2 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-900" />
-                </button>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{currentOrganization.name}</h2>
+                <p className="text-sm text-gray-600">{currentOrganization.members.toLocaleString()} members</p>
               </div>
             </div>
+            <p className="text-gray-600 mt-4 max-w-3xl">{currentOrganization.description}</p>
+          </div>
+        </section>
+      )}
 
-            {/* Day Names */}
-            <div className="grid grid-cols-7 gap-2 mb-2">
-              {dayNames.map((day) => (
-                <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-2">
-              {calendarDays.map((day, index) => {
-                if (day === null) {
-                  return <div key={`empty-${index}`} className="aspect-square" />;
-                }
-
-                const date = new Date(year, month, day);
-                const dayEvents = getEventsForDate(date);
-                const isToday = date.toDateString() === new Date().toDateString();
-
-                return (
-                  <div
-                    key={day}
-                    className={`aspect-square border border-gray-200 rounded-lg p-2 hover:border-gray-300 transition-all ${
-                      isToday ? 'bg-blue-50 border-blue-300' : 'bg-white'
-                    } ${dayEvents.length > 0 ? 'cursor-pointer' : ''}`}
-                  >
-                    <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
-                      {day}
-                    </div>
-                    {dayEvents.length > 0 && (
-                      <div className="space-y-1">
-                        {dayEvents.slice(0, 2).map((event) => (
-                          <Link
-                            key={event.id}
-                            to={`/events/${event.id}`}
-                            className="block text-[10px] bg-gray-900 text-white px-1.5 py-0.5 rounded truncate hover:bg-gray-800 transition-colors"
-                          >
-                            {event.name}
-                          </Link>
-                        ))}
-                        {dayEvents.length > 2 && (
-                          <div className="text-[10px] text-gray-600 px-1">+{dayEvents.length - 2} more</div>
-                        )}
-                      </div>
+      {/* Featured — horizontal scroll row */}
+      {!currentOrganization && featuredEvents.length > 0 && (
+        <section className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Star className="w-4 h-4 text-yellow-500" />
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Featured</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {featuredEvents.map((event) => (
+              <Link key={event.id} to={`/events/${event.id}`} className="group block">
+                <div className="relative aspect-video rounded-xl overflow-hidden">
+                  <img
+                    src={EVENT_IMAGES[event.id] || DEFAULT_EVENT_IMAGE}
+                    alt={event.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <span className="inline-block px-2 py-0.5 bg-yellow-500 text-black text-[10px] font-bold uppercase rounded mb-2">Featured</span>
+                    <h3 className="text-white font-bold text-lg leading-tight">{event.name}</h3>
+                    <p className="text-white/70 text-sm mt-1">{event.organizer} · {formatDate(event.date)}</p>
+                  </div>
+                  <div className="absolute top-3 right-3 flex gap-1.5">
+                    {event.media.videos > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-black/75 text-white text-xs font-medium">
+                        <PlayCircle className="w-3 h-3" /> {event.media.videos}
+                      </span>
+                    )}
+                    {event.media.slides > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-black/75 text-white text-xs font-medium">
+                        <FileText className="w-3 h-3" /> {event.media.slides}
+                      </span>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          /* Events Table */
-          <div className="border border-gray-200 rounded-lg overflow-hidden bg-white mb-12">
-            {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
-              <div className="col-span-2 text-sm font-semibold text-gray-600">Date</div>
-              <div className="col-span-5 text-sm font-semibold text-gray-600">Name</div>
-              <div className="col-span-3 text-sm font-semibold text-gray-600">Location</div>
-              <div className="col-span-2 text-sm font-semibold text-gray-600 text-right">Actions</div>
-            </div>
-
-            {/* Table Body */}
-            <div className="divide-y divide-gray-200">
-              {filteredEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors"
-                >
-                  {/* Date Column */}
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-900 font-medium">
-                      {formatDate(event.date)}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-0.5">{event.time}</p>
-                  </div>
-
-                  {/* Name Column */}
-                  <div className="col-span-5">
-                    <p className="text-sm text-gray-900 mb-2">{event.name}</p>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-0.5 bg-gray-100 text-gray-900 text-xs font-medium rounded">
-                        {event.type}
-                      </span>
-                      <Link
-                        to={`/discover/organizations/${event.organizerSlug}`}
-                        className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded hover:bg-blue-100 transition-colors"
-                      >
-                        {event.organizer}
-                      </Link>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Users className="w-3 h-3" />
-                      <span>{event.registered || 0} registered</span>
-                    </div>
-                  </div>
-
-                  {/* Location Column */}
-                  <div className="col-span-3">
-                    <p className="text-sm text-gray-600">{event.location}</p>
-                  </div>
-
-                  {/* Event Actions Column */}
-                  <div className="col-span-2 flex items-center justify-end gap-2">
-                    <a
-                      href={event.externalUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-1.5 border border-gray-200 text-gray-900 text-xs font-medium rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors"
-                    >
-                      Register
-                    </a>
-                    <Link
-                      to={`/events/${event.id}`}
-                      className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                      Digo
-                    </Link>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Events Near You */}
-        {!currentOrganization && (
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Near {userLocation}</h2>
-            </div>
-            <button className="text-sm text-blue-600 font-medium hover:underline">
-              Change location
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {nearbyEvents.map((event) => (
-              <div
-                key={event.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all group"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="px-2.5 py-0.5 bg-gray-100 text-gray-900 text-xs font-medium rounded">
-                    {event.type}
-                  </span>
-                  <div className="flex items-center gap-1 text-xs text-gray-600">
-                    <MapPin className="w-3 h-3" />
-                    {event.distance}
-                  </div>
-                </div>
-                <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                  {event.name}
-                </h3>
-                <p className="text-xs text-gray-600 mb-3">{formatDate(event.date)}</p>
-                <div className="flex gap-2">
-                  <a
-                    href={event.externalUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 px-2 py-1.5 border border-gray-200 text-gray-900 text-xs font-medium rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-center"
-                  >
-                    Register
-                  </a>
-                  <Link
-                    to={`/events/${event.id}`}
-                    className="flex-1 px-2 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors text-center"
-                  >
-                    Digo
-                  </Link>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* All Events — YouTube-style grid */}
+      <section>
+        <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">All Events</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {scopedEvents.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
         </div>
-        )}
-      </main>
+      </section>
+    </div>
+  );
+
+  return (
+    <div className={embedded ? '' : 'min-h-screen bg-gray-50'}>
+      {content}
     </div>
   );
 }

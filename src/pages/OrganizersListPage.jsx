@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, Users, MapPin, Star, Check, Search, TrendingUp } from 'lucide-react';
-import Header from '../components/Header';
 
 export default function OrganizersListPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,7 +92,6 @@ export default function OrganizersListPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}

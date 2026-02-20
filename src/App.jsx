@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { Calendar, Users, DollarSign, FileText, Send, Plus, Download, Edit2, Trash2, Eye, Mail, Building, BarChart3, CheckCircle, Clock, MapPin, Search, Filter, UserPlus, Briefcase, Mic, ChevronDown, X, Bell, Sun, Moon, Heart, Share2, Bookmark, Globe, Tag, TrendingUp, Star, MessageCircle, Settings, Lock, Unlock, Copy, Linkedin, ArrowLeft } from 'lucide-react';
+import AppShell from './components/AppShell';
+import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
+import { Calendar, CalendarDays, Users, DollarSign, FileText, Send, Plus, Download, Edit2, Trash2, Eye, Building, Building2, BarChart3, CheckCircle, Clock, MapPin, Search, Briefcase, Mic, X, Heart, Share2, Bookmark, Globe, TrendingUp, Star, MessageCircle, Settings, Lock, Copy, Linkedin, UtensilsCrossed, Package, Wrench } from 'lucide-react';
+import HomePage from './pages/HomePage';
 import EventPage from './pages/EventPage';
 import SessionDetailPage from './pages/SessionDetailPage';
 import MediaKitPage from './pages/MediaKitPage';
@@ -19,37 +22,24 @@ import SponsorSubmissionPage from './pages/SponsorSubmissionPage';
 import SpeakerSubmissionPage from './pages/SpeakerSubmissionPage';
 import CallForSpeakersPage from './pages/CallForSpeakersPage';
 import EventServicesPage from './pages/EventServicesPage';
-import ReportsPage from './pages/ReportsPage';
+import ServicesPage from './pages/ServicesPage';
+import MarketingPage from './pages/MarketingPage';
+import GettingStartedPage from './pages/GettingStartedPage';
+import ExplorePage from './pages/ExplorePage';
+import CreateContentPage from './pages/CreateContentPage';
+import EventPlanPage, { PlanDetail, CreatePlan } from './pages/EventPlanPage';
 import AppTour from './components/AppTour';
-import Header from './components/Header';
 
 const Dashboard = () => {
-  const [currentPage, setCurrentPage] = useState(() => {
-    const saved = localStorage.getItem('digo_current_page');
-    return saved || 'organizers';
-  });
-  const [currentRole, setCurrentRole] = useState(() => {
-    const saved = localStorage.getItem('digo_current_role');
-    return saved || 'organizer';
-  });
+  const { currentPage, setCurrentPage, currentRole, setCurrentRole } = useWorkspace();
   const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
-    // Check if user has completed the tour
     const tourCompleted = localStorage.getItem('digo_tour_completed');
     if (!tourCompleted) {
-      // Show tour after a brief delay
       setTimeout(() => setShowTour(true), 500);
     }
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem('digo_current_role', currentRole);
-  }, [currentRole]);
-
-  useEffect(() => {
-    localStorage.setItem('digo_current_page', currentPage);
-  }, [currentPage]);
 
   // Discover page data
   const [discoverEvents, setDiscoverEvents] = useState([
@@ -85,12 +75,6 @@ const Dashboard = () => {
     }
   ]);
 
-  const [participants, setParticipants] = useState([
-    { id: 1, name: 'Sarah Chen', email: 'sarah@example.com', role: 'Software Engineer', company: 'Meta', status: 'checked-in', eventId: 1 },
-    { id: 2, name: 'Michael Rodriguez', email: 'michael@example.com', role: 'Founder', company: 'StartupXYZ', status: 'registered', eventId: 1 },
-    { id: 3, name: 'Jessica Park', email: 'jessica@example.com', role: 'Student', company: 'Stanford', status: 'checked-in', eventId: 1 },
-  ]);
-
   const [sponsors, setSponsors] = useState([
     { id: 1, name: 'Snowflake', tier: 'Platinum', amount: 10000, leads: 27, status: 'active', contact: 'Chad Walker' },
     { id: 2, name: 'TechEquity', tier: 'Gold', amount: 5000, leads: 18, status: 'active', contact: 'Sheena Meade' },
@@ -119,17 +103,678 @@ const Dashboard = () => {
     slideDownloads: '',
   });
 
+  // Venue Manager Pages
+  const MyVenuesPage = () => {
+    const [myVenues, setMyVenues] = useState(() => {
+      const saved = localStorage.getItem('digo_my_venues');
+      return saved ? JSON.parse(saved) : [];
+    });
+    const [showAddVenue, setShowAddVenue] = useState(false);
+    const [showEditVenue, setShowEditVenue] = useState(false);
+    const [editingVenue, setEditingVenue] = useState(null);
+    const [venueForm, setVenueForm] = useState({
+      name: '',
+      address: '',
+      capacity: '',
+      price: '$$',
+      description: '',
+      amenities: [],
+    });
+
+    const amenitiesList = [
+      'WiFi', 'Projector', 'Sound System', 'Catering Kitchen', 'Parking',
+      'Stage', 'Video Recording', 'Whiteboard', 'Coffee Bar', 'AV Equipment',
+      'Auditorium', 'Lecture Halls', 'Conference Rooms', 'Theater', 'Outdoor Space',
+      'Museum Access', 'Event Hall'
+    ];
+
+    const handleAddVenue = (e) => {
+      e.preventDefault();
+      const newVenue = {
+        id: Date.now(),
+        ...venueForm,
+        verified: false,
+        createdAt: new Date().toISOString(),
+        views: 0,
+        bookingRequests: 0,
+      };
+      const updated = [...myVenues, newVenue];
+      setMyVenues(updated);
+      localStorage.setItem('digo_my_venues', JSON.stringify(updated));
+      setShowAddVenue(false);
+      setVenueForm({ name: '', address: '', capacity: '', price: '$$', description: '', amenities: [] });
+    };
+
+    const handleEditVenue = (e) => {
+      e.preventDefault();
+      const updated = myVenues.map(v => v.id === editingVenue.id ? { ...v, ...venueForm } : v);
+      setMyVenues(updated);
+      localStorage.setItem('digo_my_venues', JSON.stringify(updated));
+      setShowEditVenue(false);
+      setEditingVenue(null);
+      setVenueForm({ name: '', address: '', capacity: '', price: '$$', description: '', amenities: [] });
+    };
+
+    const handleDeleteVenue = (id) => {
+      if (confirm('Are you sure you want to delete this venue?')) {
+        const updated = myVenues.filter(v => v.id !== id);
+        setMyVenues(updated);
+        localStorage.setItem('digo_my_venues', JSON.stringify(updated));
+      }
+    };
+
+    const toggleAmenity = (amenity) => {
+      setVenueForm(prev => ({
+        ...prev,
+        amenities: prev.amenities.includes(amenity)
+          ? prev.amenities.filter(a => a !== amenity)
+          : [...prev.amenities, amenity]
+      }));
+    };
+
+    const quickActions = [
+      { icon: Plus, title: 'Add Venue', desc: 'List a new venue', action: () => setShowAddVenue(true) },
+      { icon: Calendar, title: 'View Requests', desc: 'Check booking requests', action: () => setCurrentPage('booking-requests') },
+    ];
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-forest">My Venues</h2>
+          <p className="text-stem mt-1">Manage your event venues and booking requests</p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex flex-wrap items-center gap-3">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={index}
+                onClick={action.action}
+                className="flex items-center gap-3 px-5 py-3 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white"
+              >
+                <div className="w-9 h-9 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <Icon className="w-4 h-4 text-white" />
+                </div>
+                <div className="text-left">
+                  <span className="text-[15px] font-semibold text-forest whitespace-nowrap block">{action.title}</span>
+                  <span className="text-xs text-stem">{action.desc}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Venues List */}
+        {myVenues.length === 0 ? (
+          <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No Venues Yet</h3>
+            <p className="text-gray-600 mb-6">Start by adding your first venue to the marketplace</p>
+            <button
+              onClick={() => setShowAddVenue(true)}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              Add Your First Venue
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {myVenues.map(venue => (
+              <div key={venue.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1">{venue.name}</h3>
+                    {venue.verified && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full">
+                        <img src="/digo.png" alt="Verified" className="w-3 h-3" />
+                        Verified
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingVenue(venue);
+                        setVenueForm({
+                          name: venue.name,
+                          address: venue.address,
+                          capacity: venue.capacity,
+                          price: venue.price,
+                          description: venue.description,
+                          amenities: venue.amenities,
+                        });
+                        setShowEditVenue(true);
+                      }}
+                      className="text-gray-400 hover:text-blue-600"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteVenue(venue.id)}
+                      className="text-gray-400 hover:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4 flex items-start gap-2">
+                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  {venue.address}
+                </p>
+                <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Capacity</div>
+                    <div className="font-bold text-gray-900">{venue.capacity}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Price</div>
+                    <div className="font-bold text-gray-900">{venue.price}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Views</div>
+                    <div className="font-semibold text-gray-900">{venue.views || 0}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Requests</div>
+                    <div className="font-semibold text-gray-900">{venue.bookingRequests || 0}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Add Venue Modal */}
+        {showAddVenue && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Add New Venue</h3>
+                <button onClick={() => setShowAddVenue(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <form onSubmit={handleAddVenue} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Venue Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={venueForm.name}
+                    onChange={(e) => setVenueForm({ ...venueForm, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Silicon Valley Tech Hub"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                  <input
+                    type="text"
+                    required
+                    value={venueForm.address}
+                    onChange={(e) => setVenueForm({ ...venueForm, address: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="123 Main St, San Francisco, CA 94105"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Capacity *</label>
+                    <input
+                      type="number"
+                      required
+                      value={venueForm.capacity}
+                      onChange={(e) => setVenueForm({ ...venueForm, capacity: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="200"
+                      min="1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price Range *</label>
+                    <select
+                      required
+                      value={venueForm.price}
+                      onChange={(e) => setVenueForm({ ...venueForm, price: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="$">$ - Budget</option>
+                      <option value="$$">$$ - Moderate</option>
+                      <option value="$$$">$$$ - Premium</option>
+                      <option value="$$$$">$$$$ - Luxury</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                  <textarea
+                    required
+                    value={venueForm.description}
+                    onChange={(e) => setVenueForm({ ...venueForm, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="3"
+                    placeholder="Describe your venue..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {amenitiesList.map(amenity => (
+                      <button
+                        key={amenity}
+                        type="button"
+                        onClick={() => toggleAmenity(amenity)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          venueForm.amenities.includes(amenity)
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {amenity}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddVenue(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                  >
+                    Add Venue
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Venue Modal */}
+        {showEditVenue && editingVenue && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Edit Venue</h3>
+                <button onClick={() => { setShowEditVenue(false); setEditingVenue(null); }} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <form onSubmit={handleEditVenue} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Venue Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={venueForm.name}
+                    onChange={(e) => setVenueForm({ ...venueForm, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                  <input
+                    type="text"
+                    required
+                    value={venueForm.address}
+                    onChange={(e) => setVenueForm({ ...venueForm, address: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Capacity *</label>
+                    <input
+                      type="number"
+                      required
+                      value={venueForm.capacity}
+                      onChange={(e) => setVenueForm({ ...venueForm, capacity: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      min="1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price Range *</label>
+                    <select
+                      required
+                      value={venueForm.price}
+                      onChange={(e) => setVenueForm({ ...venueForm, price: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="$">$ - Budget</option>
+                      <option value="$$">$$ - Moderate</option>
+                      <option value="$$$">$$$ - Premium</option>
+                      <option value="$$$$">$$$$ - Luxury</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                  <textarea
+                    required
+                    value={venueForm.description}
+                    onChange={(e) => setVenueForm({ ...venueForm, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="3"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {amenitiesList.map(amenity => (
+                      <button
+                        key={amenity}
+                        type="button"
+                        onClick={() => toggleAmenity(amenity)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          venueForm.amenities.includes(amenity)
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {amenity}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => { setShowEditVenue(false); setEditingVenue(null); }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const BookingRequestsPage = () => {
+    const [bookings, setBookings] = useState(() => {
+      const saved = localStorage.getItem('digo_venue_bookings');
+      return saved ? JSON.parse(saved) : [];
+    });
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [selectedBooking, setSelectedBooking] = useState(null);
+
+    const updateBookingStatus = (id, status) => {
+      const updated = bookings.map(b =>
+        b.id === id ? { ...b, status, updatedAt: new Date().toISOString() } : b
+      );
+      setBookings(updated);
+      localStorage.setItem('digo_venue_bookings', JSON.stringify(updated));
+      setSelectedBooking(null);
+    };
+
+    const filteredBookings = filterStatus === 'all'
+      ? bookings
+      : bookings.filter(b => b.status === filterStatus);
+
+    const stats = {
+      pending: bookings.filter(b => b.status === 'pending').length,
+      approved: bookings.filter(b => b.status === 'approved').length,
+      declined: bookings.filter(b => b.status === 'declined').length,
+    };
+
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Booking Requests</h1>
+          <p className="text-gray-600 mt-1">Manage venue booking requests from event organizers</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-yellow-600">Pending</p>
+                <p className="text-3xl font-bold text-yellow-900 mt-1">{stats.pending}</p>
+              </div>
+              <Clock className="w-12 h-12 text-yellow-600" />
+            </div>
+          </div>
+          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600">Approved</p>
+                <p className="text-3xl font-bold text-green-900 mt-1">{stats.approved}</p>
+              </div>
+              <CheckCircle className="w-12 h-12 text-green-600" />
+            </div>
+          </div>
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-red-600">Declined</p>
+                <p className="text-3xl font-bold text-red-900 mt-1">{stats.declined}</p>
+              </div>
+              <X className="w-12 h-12 text-red-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Buttons */}
+        <div className="flex gap-2">
+          {[
+            { id: 'all', label: 'All Requests' },
+            { id: 'pending', label: 'Pending' },
+            { id: 'approved', label: 'Approved' },
+            { id: 'declined', label: 'Declined' },
+          ].map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => setFilterStatus(filter.id)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                filterStatus === filter.id
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Bookings List */}
+        {filteredBookings.length === 0 ? (
+          <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+            <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No Booking Requests</h3>
+            <p className="text-gray-600">Booking requests will appear here when organizers request your venues</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredBookings.map(booking => (
+              <div key={booking.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1">{booking.venueName}</h3>
+                    <p className="text-sm text-gray-600">{booking.name} • {booking.email}</p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    booking.status === 'approved' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div>
+                    <p className="text-xs text-gray-500">Event Date</p>
+                    <p className="text-sm font-semibold text-gray-900">{booking.eventDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Time</p>
+                    <p className="text-sm font-semibold text-gray-900">{booking.eventTime}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Attendees</p>
+                    <p className="text-sm font-semibold text-gray-900">{booking.attendees}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Type</p>
+                    <p className="text-sm font-semibold text-gray-900">{booking.eventType}</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setSelectedBooking(booking)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                  >
+                    View Details
+                  </button>
+                  {booking.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => updateBookingStatus(booking.id, 'approved')}
+                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => updateBookingStatus(booking.id, 'declined')}
+                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                      >
+                        Decline
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* View Details Modal */}
+        {selectedBooking && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Booking Request Details</h3>
+                <button onClick={() => setSelectedBooking(null)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Contact Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Name:</span>
+                      <span className="font-medium">{selectedBooking.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Email:</span>
+                      <span className="font-medium">{selectedBooking.email}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Event Details</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Venue:</span>
+                      <span className="font-medium">{selectedBooking.venueName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Date:</span>
+                      <span className="font-medium">{selectedBooking.eventDate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Time:</span>
+                      <span className="font-medium">{selectedBooking.eventTime}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Attendees:</span>
+                      <span className="font-medium">{selectedBooking.attendees}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Type:</span>
+                      <span className="font-medium">{selectedBooking.eventType}</span>
+                    </div>
+                  </div>
+                </div>
+                {selectedBooking.setupRequirements && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Setup Requirements</h4>
+                    <p className="text-gray-700">{selectedBooking.setupRequirements}</p>
+                  </div>
+                )}
+                {selectedBooking.cateringNeeds && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Catering Needs</h4>
+                    <p className="text-gray-700">{selectedBooking.cateringNeeds}</p>
+                  </div>
+                )}
+                {selectedBooking.avNeeds && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">AV & Tech Needs</h4>
+                    <p className="text-gray-700">{selectedBooking.avNeeds}</p>
+                  </div>
+                )}
+                {selectedBooking.message && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Additional Message</h4>
+                    <p className="text-gray-700">{selectedBooking.message}</p>
+                  </div>
+                )}
+                {selectedBooking.status === 'pending' && (
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => updateBookingStatus(selectedBooking.id, 'approved')}
+                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                    >
+                      Approve Request
+                    </button>
+                    <button
+                      onClick={() => updateBookingStatus(selectedBooking.id, 'declined')}
+                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                    >
+                      Decline Request
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+
   // Organizers Dashboard
   const OrganizersDashboard = () => {
     const [showCreateEvent, setShowCreateEvent] = useState(false);
     const [showCreateSession, setShowCreateSession] = useState(false);
     const [showInviteSpeaker, setShowInviteSpeaker] = useState(false);
     const [showInviteSponsors, setShowInviteSponsors] = useState(false);
-    const [selectedFilters, setSelectedFilters] = useState({
-      groups: 'All Groups',
-      sponsors: 'All Sponsors',
-      venues: 'All Venues'
-    });
+    const [showCreateGroup, setShowCreateGroup] = useState(false);
+    const [showCreateCalendar, setShowCreateCalendar] = useState(false);
+    const [newGroup, setNewGroup] = useState({ name: '', description: '', category: 'Technology', isPublic: true });
+    const [newCalendar, setNewCalendar] = useState({ name: '', description: '', color: '#3B82F6' });
     const [newEvent, setNewEvent] = useState({ name: '', date: '', time: '', location: '', description: '', url: '' });
     const [newSession, setNewSession] = useState({ title: '', date: '', time: '', duration: '', topic: '', description: '' });
     const [newSpeakerInvite, setNewSpeakerInvite] = useState({ name: '', email: '', company: '', topic: '' });
@@ -264,139 +909,87 @@ const Dashboard = () => {
       setShowInviteSponsors(false);
     };
 
-    const quickActions = [
-      {
-        icon: Calendar,
-        title: 'Create an Event',
-        description: 'Create a new event with dates, venue, and details.',
-        action: () => setShowCreateEvent(true)
-      },
-      {
-        icon: Clock,
-        title: 'Create a Session',
-        description: 'Create a speaking session with details, topics, and scheduling.',
-        action: () => setShowCreateSession(true)
-      },
-      {
-        icon: UserPlus,
-        title: 'Invite a Speaker',
-        description: 'Invite a speaker to create their own session.',
-        action: () => setShowInviteSpeaker(true)
-      },
-      {
-        icon: Briefcase,
-        title: 'Invite Sponsors',
-        description: 'Invite companies to sponsor your events.',
-        action: () => setShowInviteSponsors(true)
-      }
-    ];
-    const supportingCompanies = [
-      'Snowflake',
-      'Meta',
-      'TechEquity',
-      'OpenAI',
-      'Databricks',
-      'NVIDIA',
-      'Microsoft',
-      'Google',
-    ];
+    const handleCreateGroup = () => {
+      if (!newGroup.name) return;
+      const group = {
+        id: groups.length + 1,
+        name: newGroup.name,
+        description: newGroup.description,
+        category: newGroup.category,
+        isPublic: newGroup.isPublic,
+        members: 1,
+        events: 0,
+        joined: true
+      };
+      setGroups([...groups, group]);
+      setNewGroup({ name: '', description: '', category: 'Technology', isPublic: true });
+      setShowCreateGroup(false);
+    };
+
+    const handleCreateCalendar = () => {
+      if (!newCalendar.name) return;
+      setNewCalendar({ name: '', description: '', color: '#3B82F6' });
+      setShowCreateCalendar(false);
+    };
+
+    const totalSessions = events.reduce((sum, e) => sum + (e.sessions || 0), 0);
+    const totalAttendees = events.reduce((sum, e) => sum + (e.attendees || 0), 0);
 
     return (
-      <div className="space-y-8">
-        <div className="bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-2xl p-6">
-          <p className="text-xs uppercase tracking-[0.2em] text-gray-600 mb-2">Welcome Back</p>
-          <h1 className="text-4xl font-bold text-forest mb-2">Overview</h1>
-          <p className="text-stem">Your organizer workspace for events, sessions, sponsors, and promotion tools.</p>
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-2xl font-bold text-forest">Companies That Support</h2>
-            <p className="text-sm text-stem">Trusted by our event ecosystem</p>
-          </div>
-          <div className="card-brand rounded-2xl p-4 overflow-hidden">
-            <div className="support-carousel-track">
-              {[...supportingCompanies, ...supportingCompanies].map((company, idx) => (
-                <div key={`${company}-${idx}`} className="support-company-chip">
-                  <span className="support-company-dot" />
-                  <span className="text-sm font-semibold text-gray-800">{company}</span>
-                </div>
-              ))}
+      <div className="space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Events', value: events.length, icon: Calendar },
+            { label: 'Speakers', value: speakers.length, icon: Mic },
+            { label: 'Sponsors', value: sponsors.length, icon: Briefcase },
+            { label: 'Attendees', value: totalAttendees, icon: Users },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <stat.icon className="w-4 h-4 text-gray-400" />
+                <span className="text-xs text-gray-500 font-medium">{stat.label}</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
             </div>
-          </div>
+          ))}
         </div>
 
         {/* Quick Actions */}
-        <div>
-          <h2 className="text-2xl font-bold text-forest mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, idx) => (
-              <button
-                key={idx}
-                onClick={action.action}
-                className="card-brand rounded-2xl p-6 hover:border-spring hover:shadow-md transition-all text-left group"
-              >
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                  <action.icon className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-lg font-bold text-forest mb-2">{action.title}</h3>
-                <p className="text-sm text-stem leading-relaxed">{action.description}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex items-center gap-4 py-4 border-b border-mist">
-          <div className="flex items-center gap-2 text-stem">
-            <Filter className="w-5 h-5" />
-            <span className="font-medium">Filters</span>
-          </div>
-
-          <select
-            value={selectedFilters.groups}
-            onChange={(e) => setSelectedFilters({...selectedFilters, groups: e.target.value})}
-            className="px-4 py-2 border border-mist rounded-lg text-sm hover:border-spring focus:outline-none focus:border-growth bg-white"
-          >
-            <option>All Groups</option>
-            <option>Tech Groups</option>
-            <option>Business Groups</option>
-          </select>
-
-          <select
-            value={selectedFilters.sponsors}
-            onChange={(e) => setSelectedFilters({...selectedFilters, sponsors: e.target.value})}
-            className="px-4 py-2 border border-mist rounded-lg text-sm hover:border-spring focus:outline-none focus:border-growth bg-white"
-          >
-            <option>All Sponsors</option>
-            <option>Active</option>
-            <option>Pending</option>
-          </select>
-
-          <select
-            value={selectedFilters.venues}
-            onChange={(e) => setSelectedFilters({...selectedFilters, venues: e.target.value})}
-            className="px-4 py-2 border border-mist rounded-lg text-sm hover:border-spring focus:outline-none focus:border-growth bg-white"
-          >
-            <option>All Venues</option>
-            <option>Silicon Valley</option>
-            <option>San Francisco</option>
-          </select>
-
-          {(selectedFilters.groups !== 'All Groups' || selectedFilters.sponsors !== 'All Sponsors' || selectedFilters.venues !== 'All Venues') && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          {[
+            { label: 'New Session', action: () => setShowCreateSession(true), icon: Clock },
+            { label: 'New Group', action: () => setShowCreateGroup(true), icon: Users },
+            { label: 'New Calendar', action: () => setShowCreateCalendar(true), icon: CalendarDays },
+          ].map((item) => (
             <button
-              onClick={() => setSelectedFilters({ groups: 'All Groups', sponsors: 'All Sponsors', venues: 'All Venues' })}
-              className="flex items-center gap-1 text-sm text-stem hover:text-forest"
+              key={item.label}
+              onClick={item.action}
+              className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium border rounded-xl hover:shadow-sm transition-all text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100"
             >
-              <X className="w-4 h-4" />
-              Clear all
+              <item.icon className="w-4 h-4" />
+              {item.label}
             </button>
-          )}
+          ))}
+          {[
+            { label: 'Find Speakers', path: '/call-for-speakers', icon: Mic },
+            { label: 'Find Sponsors', path: '/become-sponsor', icon: Briefcase },
+            { label: 'Find Volunteers', path: '/become-organizer', icon: Heart },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.path}
+              className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium border rounded-xl hover:shadow-sm transition-all text-purple-700 bg-purple-50 border-purple-200 hover:bg-purple-100"
+            >
+              <item.icon className="w-4 h-4" />
+              {item.label}
+            </Link>
+          ))}
         </div>
 
-        {/* Events Section */}
+        {/* Events */}
         <div>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-forest">Events</h2>
             <button
               onClick={() => setShowCreateEvent(true)}
@@ -466,58 +1059,6 @@ const Dashboard = () => {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Join Our Community */}
-        <div>
-          <h2 className="text-2xl font-bold text-forest mb-6">Join Our Community</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link to="/become-sponsor" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <DollarSign className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-bold text-forest">Become a Sponsor</h3>
-              </div>
-              <p className="text-sm text-stem leading-relaxed">Partner with events and reach our community</p>
-            </Link>
-            <Link to="/become-speaker" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Mic className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-bold text-forest">Become a Speaker</h3>
-              </div>
-              <p className="text-sm text-stem leading-relaxed">Share your expertise at upcoming events</p>
-            </Link>
-            <Link to="/submit-event" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Calendar className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-bold text-forest">Submit an Event</h3>
-              </div>
-              <p className="text-sm text-stem leading-relaxed">Share your event with the Digo community</p>
-            </Link>
-            <Link to="/become-organizer" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Star className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-bold text-forest">Become an Organizer</h3>
-              </div>
-              <p className="text-sm text-stem leading-relaxed">Get certified and grow your event community</p>
-            </Link>
-            <Link to="/event-services" className="card-brand rounded-2xl p-5 hover:border-spring hover:shadow-md transition-all group">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Briefcase className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-bold text-forest">Submit a Service</h3>
-              </div>
-              <p className="text-sm text-stem leading-relaxed">Food, swag, and other event service providers</p>
-            </Link>
-          </div>
         </div>
 
         {/* Create Event Modal */}
@@ -960,6 +1501,160 @@ Register now: ${window.location.origin}/events/${shareEvent.slug || shareEvent.i
             </div>
           </div>
         )}
+
+        {/* Create Group Modal */}
+        {showCreateGroup && (
+          <div className="fixed inset-0 bg-soil/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full">
+              <div className="border-b border-mist p-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-forest">Create New Group</h2>
+                <button onClick={() => setShowCreateGroup(false)} className="p-2 hover:bg-mist rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Group Name</label>
+                  <input
+                    type="text"
+                    value={newGroup.name}
+                    onChange={(e) => setNewGroup({...newGroup, name: e.target.value})}
+                    className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth"
+                    placeholder="e.g., AI Enthusiasts SF"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Description</label>
+                  <textarea
+                    value={newGroup.description}
+                    onChange={(e) => setNewGroup({...newGroup, description: e.target.value})}
+                    className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth resize-none"
+                    rows="3"
+                    placeholder="What is your group about?"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Category</label>
+                  <select
+                    value={newGroup.category}
+                    onChange={(e) => setNewGroup({...newGroup, category: e.target.value})}
+                    className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth bg-white"
+                  >
+                    <option value="Technology">Technology</option>
+                    <option value="Business">Business</option>
+                    <option value="Design">Design</option>
+                    <option value="Community">Community</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Visibility</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="group-visibility"
+                        checked={newGroup.isPublic}
+                        onChange={() => setNewGroup({...newGroup, isPublic: true})}
+                        className="w-4 h-4 accent-growth"
+                      />
+                      <Globe className="w-4 h-4 text-stem" />
+                      <span className="text-sm">Public</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="group-visibility"
+                        checked={!newGroup.isPublic}
+                        onChange={() => setNewGroup({...newGroup, isPublic: false})}
+                        className="w-4 h-4 accent-growth"
+                      />
+                      <Lock className="w-4 h-4 text-stem" />
+                      <span className="text-sm">Private</span>
+                    </label>
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={handleCreateGroup}
+                    className="flex-1 px-4 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    Create Group
+                  </button>
+                  <button
+                    onClick={() => setShowCreateGroup(false)}
+                    className="px-4 py-3 bg-mist text-forest rounded-lg font-medium hover:bg-spring transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Calendar Modal */}
+        {showCreateCalendar && (
+          <div className="fixed inset-0 bg-soil/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full">
+              <div className="border-b border-mist p-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-forest">Create New Calendar</h2>
+                <button onClick={() => setShowCreateCalendar(false)} className="p-2 hover:bg-mist rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Calendar Name</label>
+                  <input
+                    type="text"
+                    value={newCalendar.name}
+                    onChange={(e) => setNewCalendar({...newCalendar, name: e.target.value})}
+                    className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth"
+                    placeholder="e.g., Q2 2026 Events"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Description</label>
+                  <textarea
+                    value={newCalendar.description}
+                    onChange={(e) => setNewCalendar({...newCalendar, description: e.target.value})}
+                    className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth resize-none"
+                    rows="3"
+                    placeholder="What is this calendar for?"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Color</label>
+                  <div className="flex gap-3">
+                    {['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'].map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setNewCalendar({...newCalendar, color})}
+                        className={`w-9 h-9 rounded-full transition-all ${newCalendar.color === color ? 'ring-2 ring-offset-2 ring-gray-900 scale-110' : 'hover:scale-105'}`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={handleCreateCalendar}
+                    className="flex-1 px-4 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    Create Calendar
+                  </button>
+                  <button
+                    onClick={() => setShowCreateCalendar(false)}
+                    className="px-4 py-3 bg-mist text-forest rounded-lg font-medium hover:bg-spring transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     );
   };
@@ -998,38 +1693,31 @@ Register now: ${window.location.origin}/events/${shareEvent.slug || shareEvent.i
 
         {/* Quick Actions for Speaker Role */}
         {currentRole === 'speaker' && (
-          <div>
-            <h2 className="text-lg font-bold text-forest mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
-                  <Eye className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-bold text-forest mb-2">View Public Profile</h3>
-                <p className="text-sm text-stem">See your speaker profile</p>
-              </button>
-              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
-                  <Edit2 className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-bold text-forest mb-2">Edit Profile</h3>
-                <p className="text-sm text-stem">Update your information</p>
-              </button>
-              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
-                  <Mic className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-bold text-forest mb-2">My Sessions</h3>
-                <p className="text-sm text-stem">View upcoming talks</p>
-              </button>
-              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
-                  <Plus className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-bold text-forest mb-2">Submit Talk</h3>
-                <p className="text-sm text-stem">Propose a new session</p>
-              </button>
-            </div>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <button className="flex items-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Eye className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-forest whitespace-nowrap">View Public Profile</span>
+            </button>
+            <button className="flex items-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Edit2 className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-forest whitespace-nowrap">Edit Profile</span>
+            </button>
+            <button className="flex items-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Mic className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-forest whitespace-nowrap">My Sessions</span>
+            </button>
+            <button className="flex items-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Plus className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-forest whitespace-nowrap">Submit Talk</span>
+            </button>
           </div>
         )}
 
@@ -1221,38 +1909,31 @@ Generated on: ${new Date().toLocaleDateString()}
 
         {/* Quick Actions for Sponsor Role */}
         {currentRole === 'sponsor' && (
-          <div>
-            <h2 className="text-lg font-bold text-forest mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
-                  <Building className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-bold text-forest mb-2">My Sponsorships</h3>
-                <p className="text-sm text-stem">View active sponsorships</p>
-              </button>
-              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
-                  <Users className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-bold text-forest mb-2">View Leads</h3>
-                <p className="text-sm text-stem">Access attendee leads</p>
-              </button>
-              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
-                  <BarChart3 className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-bold text-forest mb-2">View Reports</h3>
-                <p className="text-sm text-stem">ROI and analytics</p>
-              </button>
-              <button className="card-brand rounded-2xl p-6 text-left hover:border-spring hover:shadow-sm transition-all">
-                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center mb-4">
-                  <Edit2 className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-bold text-forest mb-2">Edit Profile</h3>
-                <p className="text-sm text-stem">Update brand info</p>
-              </button>
-            </div>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <button className="flex items-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Building className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-forest whitespace-nowrap">My Sponsorships</span>
+            </button>
+            <button className="flex items-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Users className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-forest whitespace-nowrap">View Leads</span>
+            </button>
+            <button className="flex items-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <BarChart3 className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-forest whitespace-nowrap">View Reports</span>
+            </button>
+            <button className="flex items-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Edit2 className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-forest whitespace-nowrap">Edit Profile</span>
+            </button>
           </div>
         )}
 
@@ -1471,6 +2152,41 @@ Generated on: ${new Date().toLocaleDateString()}
             </div>
           </div>
         )}
+      </div>
+    );
+  };
+
+  // People Page (tabbed Speakers + Sponsors)
+  const PeoplePage = () => {
+    const [activeTab, setActiveTab] = useState('speakers');
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-forest">People</h1>
+          <p className="text-stem mt-1">Manage speakers and sponsors for your events.</p>
+        </div>
+        <div className="flex gap-1 border-b border-gray-200">
+          {[
+            { id: 'speakers', label: 'Speakers', icon: Mic },
+            { id: 'sponsors', label: 'Sponsors', icon: Briefcase },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-5 py-3 font-medium border-b-2 transition-all text-sm ${
+                activeTab === tab.id
+                  ? 'border-gray-900 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {activeTab === 'speakers' && <SpeakersPage />}
+        {activeTab === 'sponsors' && <SponsorsPage />}
       </div>
     );
   };
@@ -1917,7 +2633,7 @@ Events Team
                     </p>
                   </div>
                   <button className="w-full px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-base font-semibold">
-                    View Event
+                    View Content
                   </button>
                 </div>
               </div>
@@ -2299,152 +3015,514 @@ Events Team
     );
   };
 
+  const serviceProviders = {
+    'food-providers': {
+      title: 'Food & Catering',
+      providers: [
+        { id: 1, name: 'Moveable Feast Catering', location: 'San Francisco, CA', description: 'Full-service event catering specializing in farm-to-table menus for tech conferences.', specialties: ['Corporate Events', 'Farm-to-Table', 'Dietary Friendly'], rating: 4.8, reviewCount: 124, minOrder: '20 people', verified: true },
+        { id: 2, name: 'Bay Bites Box Lunches', location: 'Palo Alto, CA', description: 'Premium individually boxed meals perfect for workshops and day-long conferences.', specialties: ['Box Lunches', 'Quick Service', 'Large Orders'], rating: 4.6, reviewCount: 89, minOrder: '10 people', verified: true },
+        { id: 3, name: 'Saffron & Sage Catering', location: 'Mountain View, CA', description: 'Upscale catering with globally inspired menus for plated dinners and cocktail receptions.', specialties: ['Plated Dinners', 'Cocktail Events', 'Global Cuisine'], rating: 4.9, reviewCount: 67, minOrder: '30 people', verified: false },
+        { id: 4, name: 'Morning Fuel Coffee Bar', location: 'Sunnyvale, CA', description: 'Mobile espresso bar and breakfast catering for morning events and hackathons.', specialties: ['Coffee Bar', 'Breakfast', 'Hackathons'], rating: 4.7, reviewCount: 203, minOrder: '15 people', verified: true },
+      ]
+    },
+    'swag-providers': {
+      title: 'Swag & Merch',
+      providers: [
+        { id: 1, name: 'PrintLab Custom Merch', location: 'San Jose, CA', description: 'High-quality custom t-shirts, hoodies, and apparel with fast turnaround.', specialties: ['Apparel', 'Eco-Friendly', 'Fast Turnaround'], rating: 4.7, reviewCount: 156, minOrder: '50 units', verified: true },
+        { id: 2, name: 'Sticker Giant West', location: 'Fremont, CA', description: 'Custom die-cut stickers, laptop decals, and vinyl graphics for conferences.', specialties: ['Stickers', 'Die-Cut', 'Vinyl Decals'], rating: 4.9, reviewCount: 312, minOrder: '100 units', verified: true },
+        { id: 3, name: 'SwagBox Co.', location: 'Oakland, CA', description: 'Curated swag boxes with premium branded items shipped to attendees or venues.', specialties: ['Swag Boxes', 'Direct Ship', 'Premium Items'], rating: 4.5, reviewCount: 78, minOrder: '25 boxes', verified: false },
+        { id: 4, name: 'EcoSwag Supply', location: 'Berkeley, CA', description: 'Sustainable event swag — reusable bottles, bamboo accessories, recycled products.', specialties: ['Sustainable', 'Reusable', 'Custom Branding'], rating: 4.6, reviewCount: 91, minOrder: '30 units', verified: true },
+      ]
+    },
+    'av-tech': {
+      title: 'AV & Tech',
+      providers: [
+        { id: 1, name: 'EventTech AV Solutions', location: 'San Francisco, CA', description: 'Full-service AV rental and production — projectors, PA systems, live streaming.', specialties: ['AV Rental', 'Live Streaming', 'Sound Systems'], rating: 4.8, reviewCount: 97, minOrder: 'Half-day minimum', verified: true },
+        { id: 2, name: 'PixelPerfect Event Photography', location: 'Palo Alto, CA', description: 'Professional event photography and videography with same-day delivery.', specialties: ['Photography', 'Videography', 'Same-Day Delivery'], rating: 4.9, reviewCount: 184, minOrder: '2 hours minimum', verified: true },
+        { id: 3, name: 'StreamLine Productions', location: 'Santa Clara, CA', description: 'Hybrid and virtual event production — multi-camera streaming and post-editing.', specialties: ['Virtual Events', 'Multi-Camera', 'Post-Production'], rating: 4.7, reviewCount: 63, minOrder: 'Per event', verified: false },
+        { id: 4, name: 'QuickRent AV', location: 'Redwood City, CA', description: 'Affordable AV equipment rental with delivery and setup for meetups.', specialties: ['Equipment Rental', 'Delivery & Setup', 'Budget Friendly'], rating: 4.5, reviewCount: 142, minOrder: 'No minimum', verified: true },
+      ]
+    }
+  };
+
+  const VolunteerDashboard = () => {
+    const volunteerOpportunities = [
+      { id: 1, event: 'Frontier AI & AI Agents', role: 'Registration Desk', date: '2026-03-15', time: '4:30 PM - 6:00 PM', status: 'confirmed', location: 'Snowflake HQ, Menlo Park' },
+      { id: 2, event: 'React Bay Area Meetup', role: 'AV & Setup', date: '2026-03-22', time: '5:00 PM - 6:30 PM', status: 'pending', location: 'GitHub HQ, San Francisco' },
+      { id: 3, event: 'Women in Tech Summit', role: 'Speaker Liaison', date: '2026-04-05', time: '8:00 AM - 5:00 PM', status: 'open', location: 'Convention Center, San Jose' },
+      { id: 4, event: 'Startup Pitch Night', role: 'Photography', date: '2026-04-12', time: '6:00 PM - 9:00 PM', status: 'open', location: 'WeWork, Palo Alto' },
+    ];
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-forest">Volunteer Dashboard</h2>
+          <p className="text-stem mt-1">Manage your volunteer activities and find opportunities</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button className="flex items-center gap-2.5 px-5 py-3 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+            <div className="w-9 h-9 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Heart className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-left">
+              <span className="text-[15px] font-semibold text-forest block">Browse Events</span>
+              <span className="text-xs text-stem">Find events needing help</span>
+            </div>
+          </button>
+          <button className="flex items-center gap-2.5 px-5 py-3 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+            <div className="w-9 h-9 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-left">
+              <span className="text-[15px] font-semibold text-forest block">My Schedule</span>
+              <span className="text-xs text-stem">View upcoming shifts</span>
+            </div>
+          </button>
+          <button className="flex items-center gap-2.5 px-5 py-3 border border-gray-200 rounded-xl hover:border-spring hover:shadow-sm transition-all group bg-white">
+            <div className="w-9 h-9 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Star className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-left">
+              <span className="text-[15px] font-semibold text-forest block">My Hours</span>
+              <span className="text-xs text-stem">Track volunteer hours</span>
+            </div>
+          </button>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-bold text-forest mb-4">Opportunities</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {volunteerOpportunities.map(opp => (
+              <div key={opp.id} className="card-brand rounded-2xl p-6 hover:border-spring hover:shadow-sm transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h4 className="font-bold text-forest">{opp.event}</h4>
+                    <p className="text-sm text-stem mt-1">{opp.role}</p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    opp.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                    opp.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-blue-100 text-blue-800'
+                  }`}>
+                    {opp.status}
+                  </span>
+                </div>
+                <div className="space-y-1 text-sm text-stem">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{opp.date} &middot; {opp.time}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>{opp.location}</span>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-mist">
+                  <button className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    opp.status === 'open'
+                      ? 'bg-gray-900 text-white hover:bg-gray-800'
+                      : 'bg-mist text-forest'
+                  }`}>
+                    {opp.status === 'open' ? 'Sign Up' : opp.status === 'pending' ? 'Awaiting Confirmation' : 'Confirmed'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ServicesInlineView = ({ category }) => {
+    const data = serviceProviders[category];
+    if (!data) return null;
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-forest mb-6">{data.title}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {data.providers.map(provider => (
+            <div key={provider.id} className="card-brand rounded-2xl p-6 hover:border-spring hover:shadow-sm transition-all">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-forest">{provider.name}</h3>
+                    {provider.verified && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-spring text-forest text-xs font-medium rounded-full">
+                        Verified
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 text-sm text-stem mt-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>{provider.location}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  <span className="text-sm font-semibold text-forest">{provider.rating}</span>
+                  <span className="text-xs text-stem">({provider.reviewCount})</span>
+                </div>
+              </div>
+              <p className="text-sm text-stem mb-4">{provider.description}</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {provider.specialties.map((s, i) => (
+                  <span key={i} className="px-2 py-1 bg-mist text-forest text-xs rounded-full">{s}</span>
+                ))}
+              </div>
+              <div className="flex items-center justify-between pt-4 border-t border-mist">
+                <span className="text-xs text-stem">Min: {provider.minOrder}</span>
+                <button className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                  Contact
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Services Hub Page (tabbed Food + Swag + AV)
+  const ServicesHubPage = () => {
+    const [activeTab, setActiveTab] = useState('food-providers');
+    const tabs = [
+      { id: 'food-providers', label: 'Food & Catering', icon: UtensilsCrossed },
+      { id: 'swag-providers', label: 'Swag & Merch', icon: Package },
+      { id: 'av-tech', label: 'AV & Tech', icon: Wrench },
+    ];
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-forest">Services</h1>
+          <p className="text-stem mt-1">Find and manage service providers for your events.</p>
+        </div>
+        <div className="flex gap-1 border-b border-gray-200">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-5 py-3 font-medium border-b-2 transition-all text-sm ${
+                activeTab === tab.id
+                  ? 'border-gray-900 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <ServicesInlineView category={activeTab} />
+      </div>
+    );
+  };
+
   const renderContent = () => {
-    if (currentRole === 'speaker') {
-      return <SpeakersPage />;
-    }
-
-    if (currentRole === 'sponsor') {
-      return <SponsorsPage />;
-    }
-
     switch (currentPage) {
+      // Organizer pages
       case 'organizers':
         return <OrganizersDashboard />;
-      case 'speakers':
-        return <SpeakersPage />;
-      case 'sponsors':
-        return <SponsorsPage />;
+      case 'people':
+        return <PeoplePage />;
       case 'reports':
         return <ReportsPage />;
+      case 'marketing':
+        return <MarketingPage embedded />;
+
+      // Speaker pages
+      case 'speaker-dashboard':
+        return <SpeakersPage />;
+      case 'speaker-sessions':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-forest">My Sessions</h2>
+              <p className="text-stem mt-1">Sessions you are presenting at</p>
+            </div>
+            <div className="space-y-3">
+              {[
+                { title: 'Superintelligence Labs: Building Safe AI', event: 'Frontier AI & AI Agents', date: '2026-03-15', time: '5:00 PM', duration: '30 min', status: 'confirmed' },
+                { title: 'Panel: The Future of AI Agents', event: 'AI Summit 2026', date: '2026-04-20', time: '2:00 PM', duration: '45 min', status: 'pending' },
+              ].map((session, i) => (
+                <div key={i} className="card-brand rounded-2xl p-6 hover:border-spring hover:shadow-sm transition-all">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-bold text-forest text-lg">{session.title}</h3>
+                      <p className="text-sm text-stem mt-1">{session.event}</p>
+                      <div className="flex items-center gap-3 text-xs text-stem mt-3">
+                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{session.date}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{session.time} &middot; {session.duration}</span>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${session.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{session.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'speaker-submit':
+        return (
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <h2 className="text-2xl font-bold text-forest">Submit a Talk</h2>
+              <p className="text-stem mt-1">Propose a new talk for an upcoming event</p>
+            </div>
+            <div className="card-brand rounded-2xl p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-forest mb-2">Talk Title</label>
+                <input type="text" className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth" placeholder="e.g., Building Scalable AI Systems" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-forest mb-2">Abstract</label>
+                <textarea rows={4} className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth" placeholder="Describe what you'll cover..." />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Topic</label>
+                  <select className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth bg-white">
+                    <option>AI & Machine Learning</option>
+                    <option>Web Development</option>
+                    <option>Cloud & Infrastructure</option>
+                    <option>Design & UX</option>
+                    <option>Product Management</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Duration</label>
+                  <select className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth bg-white">
+                    <option>15 minutes</option>
+                    <option>30 minutes</option>
+                    <option>45 minutes</option>
+                    <option>60 minutes</option>
+                  </select>
+                </div>
+              </div>
+              <button className="w-full px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">Submit Proposal</button>
+            </div>
+          </div>
+        );
+      case 'speaker-profile':
+        return (
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <h2 className="text-2xl font-bold text-forest">My Profile</h2>
+              <p className="text-stem mt-1">Manage your speaker profile</p>
+            </div>
+            <div className="card-brand rounded-2xl p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-20 h-20 bg-gray-900 rounded-2xl flex items-center justify-center text-white font-bold text-2xl">N</div>
+                <div>
+                  <h3 className="text-xl font-bold text-forest">Nayam Rahman</h3>
+                  <p className="text-stem">Meta &middot; AI Research</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Bio</label>
+                  <textarea rows={3} className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth" defaultValue="AI researcher at Meta focusing on superintelligence safety and alignment." />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Topics</label>
+                  <div className="flex flex-wrap gap-2">
+                    {['AI Safety', 'Superintelligence', 'ML Systems'].map(t => (
+                      <span key={t} className="px-3 py-1 bg-mist text-forest text-sm rounded-full">{t}</span>
+                    ))}
+                  </div>
+                </div>
+                <button className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        );
+
+      // Sponsor pages
+      case 'sponsor-dashboard':
+        return <SponsorsPage />;
+      case 'sponsor-events':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-forest">My Events</h2>
+              <p className="text-stem mt-1">Events you are sponsoring</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { name: 'Frontier AI & AI Agents', date: '2026-03-15', location: 'Snowflake HQ, Menlo Park', tier: 'Platinum', status: 'active', attendees: 210 },
+                { name: 'React Bay Area Meetup', date: '2026-03-22', location: 'GitHub HQ, San Francisco', tier: 'Gold', status: 'upcoming', attendees: 150 },
+              ].map((event, i) => (
+                <div key={i} className="card-brand rounded-2xl p-6 hover:border-spring hover:shadow-sm transition-all">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-bold text-forest text-lg">{event.name}</h3>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      event.tier === 'Platinum' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'
+                    }`}>{event.tier}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-stem mb-3">
+                    <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{event.date}</span>
+                    <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{event.location}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-3 border-t border-mist">
+                    <span className="text-sm text-stem">{event.attendees} attendees</span>
+                    <span className={`text-xs font-medium ${event.status === 'active' ? 'text-green-600' : 'text-blue-600'}`}>{event.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'sponsor-leads':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-forest">Leads</h2>
+              <p className="text-stem mt-1">Leads generated from your sponsorships</p>
+            </div>
+            <div className="card-brand rounded-2xl overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-mist">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-stem uppercase">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-stem uppercase">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-stem uppercase">Event</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-stem uppercase">Source</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-stem uppercase">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-mist">
+                  {[
+                    { name: 'Alex Chen', email: 'alex@startup.io', event: 'Frontier AI & AI Agents', source: 'Booth Visit', date: '2026-03-15' },
+                    { name: 'Sarah Kim', email: 'sarah@techcorp.com', event: 'Frontier AI & AI Agents', source: 'QR Scan', date: '2026-03-15' },
+                    { name: 'James Wu', email: 'james@devlab.co', event: 'Frontier AI & AI Agents', source: 'Booth Visit', date: '2026-03-15' },
+                    { name: 'Maria Garcia', email: 'maria@aiventure.io', event: 'React Bay Area Meetup', source: 'Raffle Entry', date: '2026-03-22' },
+                  ].map((lead, i) => (
+                    <tr key={i} className="hover:bg-dew">
+                      <td className="px-6 py-4 text-sm font-medium text-forest">{lead.name}</td>
+                      <td className="px-6 py-4 text-sm text-stem">{lead.email}</td>
+                      <td className="px-6 py-4 text-sm text-stem">{lead.event}</td>
+                      <td className="px-6 py-4"><span className="px-2 py-1 bg-mist text-forest text-xs rounded-full">{lead.source}</span></td>
+                      <td className="px-6 py-4 text-sm text-stem">{lead.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      case 'sponsor-profile':
+        return (
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <h2 className="text-2xl font-bold text-forest">Company Profile</h2>
+              <p className="text-stem mt-1">Manage your sponsor profile</p>
+            </div>
+            <div className="card-brand rounded-2xl p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl">S</div>
+                <div>
+                  <h3 className="text-xl font-bold text-forest">Snowflake</h3>
+                  <p className="text-stem">Platinum Sponsor</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Company Description</label>
+                  <textarea rows={3} className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth" defaultValue="Snowflake enables every organization to mobilize their data with Snowflake's Data Cloud." />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-forest mb-2">Contact Person</label>
+                  <input type="text" className="w-full px-4 py-3 border border-mist rounded-lg focus:outline-none focus:border-growth" defaultValue="Chad Walker" />
+                </div>
+                <button className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        );
+
+      // Volunteer pages
+      case 'volunteer-dashboard':
+        return <VolunteerDashboard />;
+      case 'volunteer-opportunities':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-forest">Opportunities</h2>
+              <p className="text-stem mt-1">Browse events looking for volunteers</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { event: 'React Bay Area Meetup', roles: ['AV Setup', 'Registration', 'Photography'], date: '2026-03-22', location: 'GitHub HQ, San Francisco', spots: 5 },
+                { event: 'Women in Tech Summit', roles: ['Speaker Liaison', 'Check-in', 'Social Media'], date: '2026-04-05', location: 'Convention Center, San Jose', spots: 12 },
+                { event: 'Startup Pitch Night', roles: ['Photography', 'Setup & Teardown'], date: '2026-04-12', location: 'WeWork, Palo Alto', spots: 3 },
+                { event: 'AI Developer Conference', roles: ['Registration', 'AV Support', 'Workshop Assistant'], date: '2026-04-20', location: 'Snowflake HQ, Menlo Park', spots: 8 },
+              ].map((opp, i) => (
+                <div key={i} className="card-brand rounded-2xl p-6 hover:border-spring hover:shadow-sm transition-all">
+                  <h3 className="font-bold text-forest text-lg mb-1">{opp.event}</h3>
+                  <div className="flex items-center gap-2 text-sm text-stem mb-2">
+                    <Calendar className="w-3.5 h-3.5" /><span>{opp.date}</span>
+                    <span className="text-mist">|</span>
+                    <MapPin className="w-3.5 h-3.5" /><span>{opp.location}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {opp.roles.map((r, j) => <span key={j} className="px-2 py-1 bg-mist text-forest text-xs rounded-full">{r}</span>)}
+                  </div>
+                  <div className="flex items-center justify-between pt-4 border-t border-mist">
+                    <span className="text-sm text-stem">{opp.spots} spots left</span>
+                    <button className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">Apply</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'volunteer-schedule':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-forest">My Schedule</h2>
+              <p className="text-stem mt-1">Your upcoming volunteer shifts</p>
+            </div>
+            <div className="space-y-3">
+              {[
+                { event: 'Frontier AI & AI Agents', role: 'Registration Desk', date: '2026-03-15', time: '4:30 PM - 6:00 PM', location: 'Snowflake HQ, Menlo Park', status: 'confirmed' },
+                { event: 'React Bay Area Meetup', role: 'AV & Setup', date: '2026-03-22', time: '5:00 PM - 6:30 PM', location: 'GitHub HQ, San Francisco', status: 'pending' },
+              ].map((shift, i) => (
+                <div key={i} className="card-brand rounded-2xl p-5 flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-forest">{shift.event}</h4>
+                    <p className="text-sm text-stem">{shift.role}</p>
+                    <div className="flex items-center gap-3 text-xs text-stem mt-2">
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{shift.date} &middot; {shift.time}</span>
+                      <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{shift.location}</span>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${shift.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{shift.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      // Services pages
+      case 'my-venues':
+        return <MyVenuesPage />;
+      case 'services-hub':
+        return <ServicesHubPage />;
+      case 'booking-requests':
+        return <BookingRequestsPage />;
+
       default:
         return <OrganizersDashboard />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-
-      {/* Main Layout */}
-      <div className="flex">
-        {/* Left Sidebar */}
-        <aside className="w-64 border-r border-gray-200 min-h-screen bg-white sticky top-[64px] self-start">
-            <div className="px-4 pt-6 pb-2">
-              <div className="flex items-center gap-2">
-                <span className="p-1 rounded-lg bg-gray-900 shadow-garden-sm">
-                  <img src="/digo.png" alt="Digo" className="w-7 h-7" />
-                </span>
-                <span className="text-sm font-semibold text-forest">Digo Workspace</span>
-              </div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-stem mt-4">Workspace</p>
-              <h2 className="text-lg font-bold text-forest mt-2">
-                {currentRole === 'organizer' ? 'Organizer' : currentRole === 'speaker' ? 'Speaker' : 'Sponsor'}
-              </h2>
-            </div>
-            <div className="px-4 pb-4">
-              <p className="text-xs text-gray-600 mb-3 font-medium">Switch role view for context as needed</p>
-              <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-2 border-teal-200 p-2 rounded-xl grid grid-cols-3 gap-2">
-                {[
-                  { id: 'organizer', label: 'Organizer' },
-                  { id: 'speaker', label: 'Speaker' },
-                  { id: 'sponsor', label: 'Sponsor' },
-                ].map((role) => (
-                  <button
-                    key={role.id}
-                    onClick={() => {
-                      setCurrentRole(role.id);
-                      setCurrentPage(role.id === 'organizer' ? 'organizers' : role.id === 'speaker' ? 'speakers' : 'sponsors');
-                    }}
-                    className={`px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                      currentRole === role.id
-                        ? 'bg-teal-600 text-white shadow-lg scale-105'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200'
-                    }`}
-                  >
-                    {role.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {currentRole === 'organizer' ? (
-              <nav className="p-4 space-y-1">
-                <button
-                  onClick={() => setCurrentPage('organizers')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-                    currentPage === 'organizers' ? 'bg-spring text-forest font-medium' : 'text-stem hover:bg-mist'
-                  }`}
-                >
-                  <span className="w-9 h-9 rounded-xl bg-gray-100 text-forest flex items-center justify-center">
-                    <Users className="w-5 h-5" />
-                  </span>
-                  <span>Overview</span>
-                </button>
-                <button
-                  onClick={() => setCurrentPage('speakers')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-                    currentPage === 'speakers' ? 'bg-spring text-forest font-medium' : 'text-stem hover:bg-mist'
-                  }`}
-                >
-                  <span className="w-9 h-9 rounded-xl bg-gray-100 text-forest flex items-center justify-center">
-                    <Mic className="w-5 h-5" />
-                  </span>
-                  <span>Speakers</span>
-                </button>
-                <button
-                  onClick={() => setCurrentPage('sponsors')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-                    currentPage === 'sponsors' ? 'bg-spring text-forest font-medium' : 'text-stem hover:bg-mist'
-                  }`}
-                >
-                  <span className="w-9 h-9 rounded-xl bg-gray-100 text-forest flex items-center justify-center">
-                    <Briefcase className="w-5 h-5" />
-                  </span>
-                  <span>Sponsors</span>
-                </button>
-                <button
-                  onClick={() => setCurrentPage('reports')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-                    currentPage === 'reports' ? 'bg-spring text-forest font-medium' : 'text-stem hover:bg-mist'
-                  }`}
-                >
-                  <span className="w-9 h-9 rounded-xl bg-gray-100 text-forest flex items-center justify-center">
-                    <FileText className="w-5 h-5" />
-                  </span>
-                  <span>Reports</span>
-                </button>
-              </nav>
-            ) : (
-              <nav className="p-4 space-y-3">
-                <div className={`px-4 py-3 rounded-xl font-bold flex items-center gap-3 ${
-                  currentRole === 'speaker'
-                    ? 'bg-teal-50 text-teal-900 border-2 border-teal-200'
-                    : 'bg-blue-50 text-blue-900 border-2 border-blue-200'
-                }`}>
-                  {currentRole === 'speaker' ? <Mic className="w-5 h-5" /> : <Briefcase className="w-5 h-5" />}
-                  <span>{currentRole === 'speaker' ? 'Speaker Portal' : 'Sponsor Portal'}</span>
-                </div>
-                <button
-                  onClick={() => {
-                    setCurrentRole('organizer');
-                    setCurrentPage('organizers');
-                  }}
-                  className="w-full px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Organizer
-                </button>
-              </nav>
-            )}
-          </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8 max-w-[calc(100vw-320px)]">
-          {renderContent()}
-        </main>
-      </div>
-
-      {/* App Tour */}
+    <div className="p-8">
+      {renderContent()}
       {showTour && <AppTour onComplete={() => setShowTour(false)} />}
     </div>
   );
@@ -2453,28 +3531,52 @@ Events Team
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/discover" element={<DiscoverPage />} />
-        <Route path="/discover/organizations/:organizerSlug" element={<DiscoverPage />} />
-        <Route path="/groups" element={<GroupsPage />} />
-        <Route path="/groups/:orgId" element={<OrganizationPage />} />
-        <Route path="/groups/:orgId/events" element={<OrganizationEventsPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/events/:eventId" element={<EventPage />} />
-        <Route path="/events/:eventId/media-kit" element={<MediaKitPage />} />
-        <Route path="/events/:eventId/sessions/:sessionSlug" element={<SessionDetailPage />} />
-        <Route path="/email-builder" element={<EmailMakerPage />} />
-        <Route path="/add-venue" element={<VenueSubmissionPage />} />
-        <Route path="/venues" element={<VenueDiscoveryPage />} />
-        <Route path="/organizers" element={<OrganizersListPage />} />
-        <Route path="/submit-event" element={<EventSubmissionPage />} />
-        <Route path="/become-organizer" element={<CertifiedOrganizerPage />} />
-        <Route path="/become-sponsor" element={<SponsorSubmissionPage />} />
-        <Route path="/become-speaker" element={<SpeakerSubmissionPage />} />
-        <Route path="/call-for-speakers" element={<CallForSpeakersPage />} />
-        <Route path="/event-services" element={<EventServicesPage />} />
-      </Routes>
+      <WorkspaceProvider>
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/workspace" element={<Dashboard />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/explore/organizations/:organizerSlug" element={<DiscoverPage />} />
+            <Route path="/groups" element={<GroupsPage />} />
+            <Route path="/groups/:orgId" element={<OrganizationPage />} />
+            <Route path="/groups/:orgId/events" element={<OrganizationEventsPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/events/:eventId" element={<EventPage />} />
+            <Route path="/events/:eventId/media-kit" element={<MediaKitPage />} />
+            <Route path="/events/:eventId/sessions/:sessionSlug/:stage" element={<SessionDetailPage />} />
+            <Route path="/events/:eventId/sessions/:sessionSlug" element={<SessionDetailPage />} />
+            <Route path="/email-builder" element={<EmailMakerPage />} />
+            <Route path="/add-venue" element={<VenueSubmissionPage />} />
+            <Route path="/venues" element={<VenueDiscoveryPage />} />
+            <Route path="/organizers" element={<OrganizersListPage />} />
+            <Route path="/submit-event" element={<EventSubmissionPage />} />
+            <Route path="/become-organizer" element={<CertifiedOrganizerPage />} />
+            <Route path="/become-sponsor" element={<SponsorSubmissionPage />} />
+            <Route path="/become-speaker" element={<SpeakerSubmissionPage />} />
+            <Route path="/call-for-speakers" element={<CallForSpeakersPage />} />
+            <Route path="/event-services" element={<EventServicesPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/marketing" element={<MarketingPage />} />
+            <Route path="/getting-started" element={<GettingStartedPage />} />
+            <Route path="/create" element={<CreateContentPage />} />
+            <Route path="/event-plan" element={<EventPlanPage />} />
+            <Route path="/event-plan/new" element={<CreatePlan />} />
+            <Route path="/event-plan/:id" element={<PlanDetail />} />
+            <Route path="*" element={
+              <div className="min-h-screen bg-white flex items-center justify-center p-8">
+                <div className="text-center">
+                  <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+                  <p className="text-xl text-gray-600 mb-6">Page not found</p>
+                  <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                    Go Home
+                  </Link>
+                </div>
+              </div>
+            } />
+          </Route>
+        </Routes>
+      </WorkspaceProvider>
     </BrowserRouter>
   );
 }

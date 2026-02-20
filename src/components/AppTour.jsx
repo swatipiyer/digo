@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronRight, ChevronLeft, Search, Calendar, Users, MapPin, Mic, Share2, Download, Sprout, Grid3x3 } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Search, Calendar, Users, MapPin, Mic, Share2, Download, Grid3x3 } from 'lucide-react';
 
 const TOUR_STEPS = [
   {
@@ -31,11 +31,6 @@ const TOUR_STEPS = [
     title: 'Quick Actions',
     description: 'Share events, add to your calendar, get directions, and access resources with one click.',
     preview: 'actions',
-  },
-  {
-    title: 'Meet Digby 🌱',
-    description: 'Your AI companion is here to help! Click the plant pal in the bottom right for tips and guidance.',
-    preview: 'digby',
   },
 ];
 
@@ -158,19 +153,6 @@ const TourPreview = ({ type }) => {
               <MapPin className="w-5 h-5 text-forest" />
               <span className="text-xs text-forest font-medium">Directions</span>
             </div>
-          </div>
-        </div>
-      );
-
-    case 'digby':
-      return (
-        <div className="bg-dew p-6 rounded-lg flex flex-col items-center justify-center">
-          <div className="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-4 animate-pulse">
-            <Sprout className="w-10 h-10 text-white" />
-          </div>
-          <div className="bg-white border-2 border-spring rounded-xl p-4 max-w-xs relative">
-            <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-r-2 border-b-2 border-spring transform rotate-45"></div>
-            <p className="text-sm text-forest text-center">Hi! I'm Digby, your event companion. Click me anytime for help! 🌱</p>
           </div>
         </div>
       );

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { FileText, Mail, DollarSign, Copy, Download, Check } from 'lucide-react';
-import Header from '../components/Header';
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState('event-data');
@@ -55,7 +54,6 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Reports</h1>
@@ -113,7 +111,7 @@ function TabButton({ active, onClick, icon: Icon, label }) {
       onClick={onClick}
       className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
         active
-          ? 'border-teal-600 text-teal-600 font-semibold'
+          ? 'border-blue-600 text-blue-600 font-semibold'
           : 'border-transparent text-gray-600 hover:text-gray-900'
       }`}
     >
@@ -141,7 +139,7 @@ function EventDataTab({ data, onChange }) {
             type="text"
             value={data.eventName}
             onChange={(e) => onChange('eventName', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="Frontier AI & AI Agents"
           />
         </div>
@@ -154,7 +152,7 @@ function EventDataTab({ data, onChange }) {
             type="date"
             value={data.eventDate}
             onChange={(e) => onChange('eventDate', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
           />
         </div>
 
@@ -167,7 +165,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.totalRegistered}
             onChange={(e) => onChange('totalRegistered', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="150"
           />
         </div>
@@ -180,7 +178,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.totalAttended}
             onChange={(e) => onChange('totalAttended', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="120"
           />
         </div>
@@ -194,7 +192,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.engineers}
             onChange={(e) => onChange('engineers', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="45"
           />
         </div>
@@ -207,7 +205,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.founders}
             onChange={(e) => onChange('founders', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="30"
           />
         </div>
@@ -220,7 +218,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.students}
             onChange={(e) => onChange('students', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="20"
           />
         </div>
@@ -233,7 +231,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.dataScientists}
             onChange={(e) => onChange('dataScientists', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="25"
           />
         </div>
@@ -247,7 +245,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.socialMentions}
             onChange={(e) => onChange('socialMentions', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="500"
           />
         </div>
@@ -260,7 +258,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.impressions}
             onChange={(e) => onChange('impressions', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="10000"
           />
         </div>
@@ -273,7 +271,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.linkedinPosts}
             onChange={(e) => onChange('linkedinPosts', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="75"
           />
         </div>
@@ -286,7 +284,7 @@ function EventDataTab({ data, onChange }) {
             type="number"
             value={data.videoViews}
             onChange={(e) => onChange('videoViews', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
             placeholder="2500"
           />
         </div>
@@ -312,7 +310,7 @@ We'd love to hear your feedback! Please take 2 minutes to complete our survey:
 [Survey Link]
 
 Stay connected:
-• Follow us on LinkedIn and Twitter
+• Follow us on LinkedIn and X
 • Join our community group
 • Check out event recordings and slides
 
@@ -337,7 +335,7 @@ The Digo Team`;
       <div className="flex gap-3">
         <button
           onClick={() => onCopy(emailContent)}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Copy className="w-4 h-4" />
           Copy Email
@@ -408,7 +406,7 @@ Thank you for your sponsorship and support in making this event a success!`;
       <div className="flex gap-3">
         <button
           onClick={() => onCopy(reportContent)}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Copy className="w-4 h-4" />
           Copy Report

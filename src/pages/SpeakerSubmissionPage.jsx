@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mic, Mail, Globe, FileText, Tag, ArrowLeft, Check, Linkedin, Upload, X } from 'lucide-react';
-import Header from '../components/Header';
 import { processSpeakerPhoto, validateImageFile } from '../utils/photoStorage';
 
 export default function SpeakerSubmissionPage() {
@@ -153,20 +152,19 @@ export default function SpeakerSubmissionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
         <div className="mb-8">
           <Link
-            to="/discover"
+            to="/"
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Discover
+            Back to Home
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-teal-600 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
               <Mic className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900">Become an Event Speaker</h1>
@@ -175,23 +173,23 @@ export default function SpeakerSubmissionPage() {
         </div>
 
         {/* Benefits Section */}
-        <div className="bg-teal-50 border border-teal-200 rounded-lg p-6 mb-8">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Why Speak at Digo Events?</h3>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-teal-600 flex-shrink-0" />
+              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
               <span><strong>Build Your Brand</strong> - Establish yourself as a thought leader in your field</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-teal-600 flex-shrink-0" />
+              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
               <span><strong>Grow Your Network</strong> - Connect with engaged professionals and potential collaborators</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-teal-600 flex-shrink-0" />
+              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
               <span><strong>Speaker Profile</strong> - Get a featured profile on our platform visible to all organizers</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-5 h-5 text-teal-600 flex-shrink-0" />
+              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
               <span><strong>Recording & Promotion</strong> - Talks are recorded and shared across our channels</span>
             </li>
           </ul>
@@ -214,7 +212,7 @@ export default function SpeakerSubmissionPage() {
                   required
                   value={formData.fullName}
                   onChange={(e) => handleChange('fullName', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -230,7 +228,7 @@ export default function SpeakerSubmissionPage() {
                     required
                     value={formData.title}
                     onChange={(e) => handleChange('title', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     placeholder="e.g. Senior Engineer"
                   />
                 </div>
@@ -244,7 +242,7 @@ export default function SpeakerSubmissionPage() {
                     required
                     value={formData.company}
                     onChange={(e) => handleChange('company', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     placeholder="e.g. Acme Corp"
                   />
                 </div>
@@ -264,7 +262,7 @@ export default function SpeakerSubmissionPage() {
                     value={formData.bio}
                     onChange={(e) => handleChange('bio', e.target.value)}
                     rows={4}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     placeholder="Tell us about yourself, your experience, and what makes you a great speaker..."
                   />
                 </div>
@@ -283,7 +281,7 @@ export default function SpeakerSubmissionPage() {
                     required
                     value={formData.expertise}
                     onChange={(e) => handleChange('expertise', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600 appearance-none bg-white"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 appearance-none bg-white"
                   >
                     <option value="">Select your area of expertise</option>
                     {expertiseAreas.map((area) => (
@@ -304,7 +302,7 @@ export default function SpeakerSubmissionPage() {
                     <img
                       src={headshotPreview}
                       alt="Headshot preview"
-                      className="w-32 h-32 object-cover rounded-lg border-2 border-teal-600"
+                      className="w-32 h-32 object-cover rounded-lg border-2 border-blue-600"
                     />
                     <button
                       type="button"
@@ -321,7 +319,7 @@ export default function SpeakerSubmissionPage() {
                   id="headshot"
                   accept="image/*"
                   onChange={handleHeadshotChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
 
                 {/* Upload Error */}
@@ -379,7 +377,7 @@ export default function SpeakerSubmissionPage() {
                     required
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     placeholder="you@email.com"
                   />
                 </div>
@@ -394,7 +392,7 @@ export default function SpeakerSubmissionPage() {
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => handleChange('phone', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   placeholder="(555) 123-4567"
                 />
               </div>
@@ -413,7 +411,7 @@ export default function SpeakerSubmissionPage() {
                       id="website"
                       value={formData.website}
                       onChange={(e) => handleChange('website', e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                       placeholder="https://yoursite.com"
                     />
                   </div>
@@ -431,7 +429,7 @@ export default function SpeakerSubmissionPage() {
                       id="linkedin"
                       value={formData.linkedin}
                       onChange={(e) => handleChange('linkedin', e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                       placeholder="https://linkedin.com/in/you"
                     />
                   </div>
@@ -459,7 +457,7 @@ export default function SpeakerSubmissionPage() {
                     required
                     value={formData.talkTitle}
                     onChange={(e) => handleChange('talkTitle', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     placeholder="e.g. Building Scalable AI Pipelines in Production"
                   />
                 </div>
@@ -479,7 +477,7 @@ export default function SpeakerSubmissionPage() {
                     value={formData.talkDescription}
                     onChange={(e) => handleChange('talkDescription', e.target.value)}
                     rows={4}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     placeholder="Describe your talk, key takeaways, and what the audience will learn..."
                   />
                 </div>
@@ -494,7 +492,7 @@ export default function SpeakerSubmissionPage() {
                   required
                   value={formData.talkDuration}
                   onChange={(e) => handleChange('talkDuration', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600 appearance-none bg-white"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 appearance-none bg-white"
                 >
                   <option value="">Select preferred duration</option>
                   {talkDurations.map((dur) => (
@@ -516,7 +514,7 @@ export default function SpeakerSubmissionPage() {
                     value={formData.previousSpeaking}
                     onChange={(e) => handleChange('previousSpeaking', e.target.value)}
                     rows={3}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     placeholder="List any conferences, meetups, or events you've spoken at previously..."
                   />
                 </div>
@@ -553,7 +551,7 @@ export default function SpeakerSubmissionPage() {
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 bg-teal-600 text-white rounded-lg font-medium text-sm hover:bg-teal-700 transition-colors"
+              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors"
             >
               Submit Speaker Application
             </button>
@@ -565,19 +563,19 @@ export default function SpeakerSubmissionPage() {
           <h3 className="text-sm font-semibold text-gray-900 mb-3">What happens next?</h3>
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-start gap-2">
-              <span className="text-teal-600 font-bold">1.</span>
+              <span className="text-blue-600 font-bold">1.</span>
               <span>Our curation team reviews your speaker profile and talk proposal</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-teal-600 font-bold">2.</span>
+              <span className="text-blue-600 font-bold">2.</span>
               <span>We'll match you with upcoming events that fit your expertise</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-teal-600 font-bold">3.</span>
+              <span className="text-blue-600 font-bold">3.</span>
               <span>Event organizers will reach out to confirm scheduling and logistics</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-teal-600 font-bold">4.</span>
+              <span className="text-blue-600 font-bold">4.</span>
               <span>Your speaker profile will be listed in our directory for future opportunities</span>
             </li>
           </ul>
